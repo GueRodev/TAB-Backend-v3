@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles; //  Agregado HasRoles
 
     /**
      * The attributes that are mass assignable.
@@ -46,4 +47,82 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // ========================================
+    // MÉTODOS HELPER PARA ROLES
+    // ========================================
+
+    /**
+     * Obtener el nombre del rol principal del usuario
+     * 
+     * @return string
+     */
+    public function getRoleName(): string
+    {
+        return $this->roles->first()?->name ?? 'Sin rol';
+    }
+
+    /**
+     * Verificar si el usuario es Super Admin
+     * 
+     * @return bool
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('Super Admin');
+    }
+
+    /**
+     * Verificar si el usuario es Cliente
+     * 
+     * @return bool
+     */
+    public function isCliente(): bool
+    {
+        return $this->hasRole('Cliente');
+    }
+
+    // ========================================
+    // RELACIONES descomentarlas cuando se implementen los modelos
+    // ========================================
+
+    /**
+     * Relación con direcciones del usuario
+     */
+   // public function addresses()
+   // {
+       // return $this->hasMany(Address::class);
+   // }
+
+    /**
+     * Relación con pedidos del usuario
+     */
+   // public function orders()
+   // {
+       // return $this->hasMany(Order::class);
+   // }
+
+    /**
+     * Relación con items del carrito del usuario
+     */
+   // public function cartItems()
+    //{
+       // return $this->hasMany(CartItem::class);
+    //}
+
+    /**
+     * Relación con items de la wishlist del usuario
+     */
+   // public function wishlistItems()
+    //{
+       // return $this->hasMany(WishlistItem::class);
+    //}
+
+    /**
+     * Relación con notificaciones del usuario
+     */
+   // public function notifications()
+   // {
+       // return $this->hasMany(Notification::class);
+   // }
 }
