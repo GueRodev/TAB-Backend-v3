@@ -8,15 +8,15 @@ use App\Http\Controllers\Api\AuthController;
 // API VERSION 1
 // ========================================
 
-Route::prefix('v1')->group(function () {// Prefijo de la versión de la API
+Route::prefix('v1')->group(function () {
 
     // ========================================
     // RUTAS PÚBLICAS (Sin autenticación)
     // ========================================
 
     Route::prefix('auth')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);// Registrar nuevo usuario
-        Route::post('/login', [AuthController::class, 'login']);// Iniciar sesión
+        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/login', [AuthController::class, 'login']);
     });
 
     // ========================================
@@ -27,14 +27,83 @@ Route::prefix('v1')->group(function () {// Prefijo de la versión de la API
         
         // Rutas de autenticación
         Route::prefix('auth')->group(function () {
-            Route::get('/me', [AuthController::class, 'me']); // Obtener información del usuario autenticado
-            Route::post('/logout', [AuthController::class, 'logout']); // Cerrar sesión en el dispositivo actual
-            Route::post('/logout-all', [AuthController::class, 'logoutAll']); // Cerrar sesión en todos los dispositivos
+            Route::get('/me', [AuthController::class, 'me']);
+            Route::post('/logout', [AuthController::class, 'logout']);
+            Route::post('/logout-all', [AuthController::class, 'logoutAll']);
         });
 
         // Ruta de ejemplo (la que venía por defecto)
         Route::get('/user', function (Request $request) {
             return $request->user();
+        });
+
+        // ========================================
+        // RUTAS SOLO PARA SUPER ADMIN
+        // (Rutas de prueba temporal para Postman)
+        // ========================================
+        Route::middleware('role:Super Admin')->group(function () {
+            
+            Route::prefix('admin')->group(function () {
+                
+                // Dashboard Admin
+                Route::get('/dashboard', function (Request $request) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Bienvenido al Dashboard Admin',
+                        'data' => [
+                            'user' => $request->user()->name,
+                            'role' => $request->user()->getRoleName(),
+                        ],
+                    ]);
+                });
+
+                // Gestión de productos (solo Super Admin)
+                Route::get('/products', function (Request $request) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Gestión de productos - Solo Super Admin',
+                        'data' => [
+                            'access_level' => 'Super Admin',
+                            'can_create' => $request->user()->can('create products'),
+                            'can_edit' => $request->user()->can('edit products'),
+                            'can_delete' => $request->user()->can('delete products'),
+                        ],
+                    ]);
+                });
+
+                // Gestión de usuarios (solo Super Admin)
+                Route::get('/users', function (Request $request) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Gestión de usuarios - Solo Super Admin',
+                        'data' => [
+                            'access_level' => 'Super Admin',
+                            'can_view' => $request->user()->can('view users'),
+                            'can_create' => $request->user()->can('create users'),
+                            'can_edit' => $request->user()->can('edit users'),
+                            'can_delete' => $request->user()->can('delete users'),
+                        ],
+                    ]);
+                });
+            });
+        });
+
+        // ========================================
+        // RUTAS PÚBLICAS AUTENTICADAS (Todos los usuarios)
+        // ========================================
+        
+        // Ver productos (Cliente y Admin)
+        Route::get('/products', function (Request $request) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Listado de productos - Acceso para usuarios autenticados',
+                'data' => [
+                    'user' => $request->user()->name,
+                    'role' => $request->user()->getRoleName(),
+                    'can_view' => $request->user()->can('view products'),
+                    'can_create' => $request->user()->can('create products'),
+                ],
+            ]);
         });
     });
 
