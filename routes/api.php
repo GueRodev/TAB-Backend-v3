@@ -3,6 +3,13 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\TestMailController;
+
+
+// ========================================
+// RUTA DE PRUEBA EMAIL
+// ========================================
+Route::post('/test-email', [TestMailController::class, 'sendTestEmail']);
 
 // ========================================
 // API VERSION 1
