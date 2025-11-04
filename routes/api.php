@@ -48,7 +48,7 @@ Route::prefix('v1')->group(function () {
                         ],
                     ]);
                 });
-
+ 
                 // Gestión de productos (solo Super Admin)
                 Route::get('/products', function (Request $request) {
                     return response()->json([
