@@ -19,6 +19,11 @@ Route::prefix('v1')->group(function () {
     // ========================================
     require base_path('routes/v1/auth.php');
 
+     // ========================================
+    // MÓDULO DE CATEGORÍAS
+    // ========================================
+    require base_path('routes/v1/categories.php');  // ← AGREGAR ESTA LÍNEA
+
     // ========================================
     // RUTAS PROTEGIDAS (Requieren autenticación)
     // ========================================

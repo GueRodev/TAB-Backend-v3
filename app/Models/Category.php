@@ -37,7 +37,7 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
-
+//Descomentar cuando se implementen los productos
     public function products()
     {
        // return $this->hasMany(Product::class);
