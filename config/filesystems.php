@@ -46,6 +46,15 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        
+        // ← AGREGAR ESTE DISK NUEVO
+    'products' => [
+        'driver' => 'local',
+        'root' => storage_path('app/public/productos'),
+        'url' => env('APP_URL').'/storage/productos',
+        'visibility' => 'public',
+        'throw' => false,
+        ],
 
         's3' => [
             'driver' => 's3',
