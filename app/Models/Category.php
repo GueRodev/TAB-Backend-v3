@@ -40,7 +40,7 @@ class Category extends Model
 //Descomentar cuando se implementen los productos
     public function products()
     {
-       // return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class);
     }
 
     // Scopes

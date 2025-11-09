@@ -165,21 +165,21 @@ class CategoryController extends Controller
                 'error' => 'PROTECTED_CATEGORY_MISSING'
             ], 500);
         }
-        //Descomentar cuando se implementen los productos
-        // REASIGNAR productos si aún tiene
-       // $productsCount = $category->products()->count();
         
-       // if ($productsCount > 0) {
-       //     $category->products()->update([
-       //         'category_id' => $otherCategory->id
-       //     ]);
-       // }
+        // REASIGNAR productos si aún tiene
+        $productsCount = $category->products()->count();
+        
+        if ($productsCount > 0) {
+            $category->products()->update([
+                'category_id' => $otherCategory->id
+            ]);
+        }
         
         $category->forceDelete();
         
         return response()->json([
             'message' => 'Categoría eliminada permanentemente de forma exitosa',
-            //'productos_reasignados' => $productsCount
+            'productos_reasignados' => $productsCount
         ]);
     }
     
