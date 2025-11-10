@@ -11,6 +11,23 @@ class StoreProductRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Preparar datos para validación
+     */
+    protected function prepareForValidation()
+    {
+        // Convertir is_featured a booleano antes de validar
+        if ($this->has('is_featured')) {
+            $value = $this->is_featured;
+            // Convertir string "0", "1", "true", "false" a booleano real
+            $boolean = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            $this->merge([
+                'is_featured' => $boolean ?? false,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -23,7 +40,7 @@ class StoreProductRequest extends FormRequest
             'sku' => 'nullable|string|unique:products|max:50',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'status' => 'required|in:active,inactive,out_of_stock',
-            'is_featured' => 'boolean',
+            'is_featured' => 'nullable|boolean',
         ];
     }
 }

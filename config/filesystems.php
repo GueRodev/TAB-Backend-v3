@@ -48,12 +48,12 @@ return [
         ],
         
         // ← AGREGAR ESTE DISK NUEVO
-    'products' => [
-        'driver' => 'local',
-        'root' => storage_path('app/public/productos'),
-        'url' => env('APP_URL').'/storage/productos',
-        'visibility' => 'public',
-        'throw' => false,
+       'products' => [
+           'driver' => 'local',
+           'root' => storage_path('app/public/products'),
+           'url' => env('APP_URL').'/storage/products',
+           'visibility' => 'public',
+           'throw' => false,
         ],
 
         's3' => [
