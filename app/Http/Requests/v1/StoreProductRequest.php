@@ -12,7 +12,7 @@ class StoreProductRequest extends FormRequest
     }
 
     /**
-     * Preparar datos para validación
+     * Preparar datos para validación para pruebas en Postman
      */
     protected function prepareForValidation()
     {
