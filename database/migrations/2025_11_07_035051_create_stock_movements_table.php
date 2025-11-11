@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')
                   ->constrained()->onDelete('cascade'); // OK - registros del producto
-            $table->enum('type', ['entrada', 'salida', 'ajuste']);
+            $table->enum('type', ['entrada', 'salida', 'ajuste', 'reserva', 'venta', 'cancelacion_reserva']);
             $table->integer('quantity');
             $table->integer('stock_before');
             $table->integer('stock_after');

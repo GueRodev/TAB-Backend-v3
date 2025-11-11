@@ -10,13 +10,14 @@ class StockMovement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id', 
-        'type', 
-        'quantity', 
-        'stock_before', 
-        'stock_after', 
-        'reason', 
-        'user_id'
+        'product_id',
+        'type',
+        'quantity',
+        'stock_before',
+        'stock_after',
+        'reason',
+        'user_id',
+        'order_id'
     ];
 
     protected $casts = [
@@ -34,5 +35,10 @@ class StockMovement extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }
