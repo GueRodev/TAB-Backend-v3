@@ -21,6 +21,12 @@ Route::prefix('v1')->group(function () {
     // MÓDULO DE PRODUCTOS
     require base_path('routes/v1/products.php');
 
+    // MÓDULO DE PEDIDOS - CLIENTES
+    require base_path('routes/v1/orders.php');
+
+    // MÓDULO DE PEDIDOS - ADMIN
+    require base_path('routes/v1/admin_orders.php');
+
    //Ruta de ejemplo para verificar si el usuario está autenticado
     Route::middleware('auth:sanctum')->group(function () {
         // Ruta de ejemplo (la que venía por defecto)
