@@ -1,0 +1,1492 @@
+{
+	"info": {
+		"_postman_id": "tab-orders-system-v1",
+		"name": "TAB Backend - Sistema de Pedidos (Fase 4)",
+		"description": "Colección completa para probar el sistema de pedidos de Toys and Bricks.\n\n## Configuración Inicial\n\n1. Importar el archivo de entorno `TAB_Environment.postman_environment.json`\n2. Ejecutar el request de login para Cliente y Admin\n3. Los tokens se guardarán automáticamente\n4. Seguir los flujos de prueba documentados\n\n## Variables de Entorno Requeridas\n\n- `base_url`: URL base de la API (ej: http://localhost:8000)\n- `token_cliente`: Token de autenticación del cliente\n- `token_admin`: Token de autenticación del admin\n- `order_id`: ID del último pedido creado (se actualiza automáticamente)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. Autenticación",
+			"item": [
+				{
+					"name": "Login Cliente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"token_cliente\", jsonData.data.token);",
+									"        pm.test(\"Token guardado correctamente\", () => {",
+									"            pm.expect(jsonData.data.token).to.be.a('string');",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success property\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"cliente@example.com\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login para obtener token de cliente. El token se guarda automáticamente en la variable de entorno `token_cliente`."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"token_admin\", jsonData.data.token);",
+									"        pm.test(\"Token admin guardado correctamente\", () => {",
+									"            pm.expect(jsonData.data.token).to.be.a('string');",
+									"        });",
+									"    }",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success property\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login para obtener token de Super Admin. El token se guarda automáticamente en la variable de entorno `token_admin`."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para autenticación y obtención de tokens"
+		},
+		{
+			"name": "1. Rutas de Cliente",
+			"item": [
+				{
+					"name": "Listar Pedidos del Cliente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON\", () => {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Has success property\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test(\"Has data with pagination\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('current_page');",
+									"    pm.expect(jsonData.data).to.have.property('data').that.is.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Lista todos los pedidos del cliente autenticado. Soporta filtros por status, order_type y paginación."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Pedidos - Filtro por Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All orders have completed status\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data.data.length > 0) {",
+									"        jsonData.data.data.forEach(order => {",
+									"            pm.expect(order.status).to.equal('completed');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders?status=completed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed"
+								}
+							]
+						},
+						"description": "Filtra pedidos por estado. Valores posibles: pending, in_progress, completed, cancelled, archived"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Pedido Online - Delivery",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Order created successfully\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('order_number');",
+									"    pm.expect(jsonData.data.status).to.equal('pending');",
+									"    pm.expect(jsonData.data.order_type).to.equal('online');",
+									"});",
+									"",
+									"// Guardar order_id para usar en otros requests",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set(\"order_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"María González\",\n    \"customer_email\": \"maria@example.com\",\n    \"customer_phone\": \"88887777\",\n    \"delivery_option\": \"delivery\",\n    \"payment_method\": \"sinpe\",\n    \"notes\": \"Entregar en horario de oficina\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2\n        },\n        {\n            \"product_id\": 3,\n            \"quantity\": 1\n        }\n    ],\n    \"shipping_address\": {\n        \"province\": \"San José\",\n        \"canton\": \"Escazú\",\n        \"district\": \"San Rafael\",\n        \"address_details\": \"100m norte de la iglesia, casa amarilla con portón negro\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Crea un pedido online con envío a domicilio. El stock se reserva automáticamente. Guarda el order_id en las variables de entorno."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Pedido Online - Pickup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Order created with pickup\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.delivery_option).to.equal('pickup');",
+									"    pm.expect(jsonData.data.order_type).to.equal('online');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Carlos Ramírez\",\n    \"customer_email\": \"carlos@example.com\",\n    \"customer_phone\": \"77776666\",\n    \"delivery_option\": \"pickup\",\n    \"payment_method\": \"cash\",\n    \"items\": [\n        {\n            \"product_id\": 2,\n            \"quantity\": 1\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Crea un pedido online para recoger en tienda. No requiere shipping_address."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Detalles de Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order details are complete\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('order_number');",
+									"    pm.expect(jsonData.data).to.have.property('items').that.is.an('array');",
+									"    pm.expect(jsonData.data).to.have.property('stock_movements').that.is.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders/{{order_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders",
+								"{{order_id}}"
+							]
+						},
+						"description": "Ver detalles completos de un pedido del cliente, incluyendo items, dirección de envío y movimientos de stock."
+					},
+					"response": []
+				},
+				{
+					"name": "Error - Pedido sin Items",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", () => {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Validation error for items\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Test Error\",\n    \"customer_email\": \"test@example.com\",\n    \"customer_phone\": \"88887777\",\n    \"delivery_option\": \"pickup\",\n    \"payment_method\": \"cash\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Prueba de validación: crear pedido sin items debe retornar error 422."
+					},
+					"response": []
+				},
+				{
+					"name": "Error - Delivery sin Address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", () => {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Validation error for shipping address\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Test Error\",\n    \"customer_email\": \"test@example.com\",\n    \"customer_phone\": \"88887777\",\n    \"delivery_option\": \"delivery\",\n    \"payment_method\": \"cash\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"orders"
+							]
+						},
+						"description": "Prueba de validación: crear pedido con delivery sin shipping_address debe retornar error 422."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para clientes: crear pedidos online, listar sus pedidos y ver detalles."
+		},
+		{
+			"name": "2. Rutas de Admin",
+			"item": [
+				{
+					"name": "Listar Todos los Pedidos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Admin can see all orders\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"    pm.expect(jsonData.data).to.have.property('data').that.is.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders"
+							]
+						},
+						"description": "Admin puede ver todos los pedidos de todos los clientes."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Pedidos - Filtros Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders?status=pending&order_type=online",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "order_type",
+									"value": "online"
+								}
+							]
+						},
+						"description": "Filtrar pedidos por múltiples criterios: status, order_type, delivery_option, payment_method, customer_email, order_number."
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Pedido en Tienda Física",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", () => {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"In-store order created\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.order_type).to.equal('in_store');",
+									"    pm.expect(jsonData.data.delivery_option).to.equal('pickup');",
+									"});",
+									"",
+									"// Guardar order_id para usar en cambios de estado",
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set(\"order_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Luis Fernández\",\n    \"customer_phone\": \"66665555\",\n    \"payment_method\": \"card\",\n    \"notes\": \"Cliente prefiere bolsa de regalo\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        },\n        {\n            \"product_id\": 2,\n            \"quantity\": 2\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders"
+							]
+						},
+						"description": "Admin puede crear pedidos en la tienda física. order_type será 'in_store' automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Detalles de Cualquier Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order details include all info\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data).to.have.property('items');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}"
+							]
+						},
+						"description": "Admin puede ver detalles de cualquier pedido, no solo los suyos."
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar Pedido como En Progreso",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order status updated to in_progress\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.equal('in_progress');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/mark-in-progress",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}",
+								"mark-in-progress"
+							]
+						},
+						"description": "Marca un pedido como 'en progreso'. Solo válido si el estado actual es 'pending'."
+					},
+					"response": []
+				},
+				{
+					"name": "Completar Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order completed successfully\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.equal('completed');",
+									"    pm.expect(jsonData.message).to.include('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/complete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}",
+								"complete"
+							]
+						},
+						"description": "Completa un pedido. Acciones automáticas:\n- Confirma la venta (convierte reserva → venta)\n- Descuenta el stock físico\n- Envía email de comprobante al cliente"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order cancelled and stock released\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.equal('cancelled');",
+									"    pm.expect(jsonData.message).to.include('stock liberado');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}",
+								"cancel"
+							]
+						},
+						"description": "Cancela un pedido y libera el stock reservado automáticamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Archivar Pedido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order archived\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data.status).to.equal('archived');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}/archive",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}",
+								"archive"
+							]
+						},
+						"description": "Archiva un pedido. Solo válido para pedidos 'completed' o 'cancelled'."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Pedido (Soft Delete)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Order deleted\", () => {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('eliminado');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/orders/{{order_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"orders",
+								"{{order_id}}"
+							]
+						},
+						"description": "Elimina un pedido (soft delete). Si está en 'pending' o 'in_progress', libera el stock automáticamente."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints exclusivos de admin: crear pedidos en tienda, gestionar estados, archivar y eliminar."
+		},
+		{
+			"name": "3. Flujos de Prueba Completos",
+			"item": [
+				{
+					"name": "Flujo 1 - Pedido Online Exitoso",
+					"item": [
+						{
+							"name": "1. Crear Pedido Online",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"test_order_id\", jsonData.data.id);",
+											"    console.log(\"✅ Pedido creado con ID: \" + jsonData.data.id);",
+											"    console.log(\"✅ Número de orden: \" + jsonData.data.order_number);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_cliente}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"Test Flujo 1\",\n    \"customer_email\": \"flujo1@example.com\",\n    \"customer_phone\": \"88881111\",\n    \"delivery_option\": \"delivery\",\n    \"payment_method\": \"sinpe\",\n    \"notes\": \"Pedido de prueba - Flujo completo\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 2\n        }\n    ],\n    \"shipping_address\": {\n        \"province\": \"San José\",\n        \"canton\": \"Central\",\n        \"district\": \"Carmen\",\n        \"address_details\": \"Dirección de prueba\"\n    }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Admin - Marcar como En Progreso",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{test_order_id}}/mark-in-progress",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{test_order_id}}",
+										"mark-in-progress"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Admin - Completar Pedido",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"✅ Pedido completado\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"console.log(\"✅ Pedido completado - Verificar email en logs\");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{test_order_id}}/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{test_order_id}}",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Cliente - Ver Pedido Completado",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_cliente}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/{{test_order_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"orders",
+										"{{test_order_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5. Admin - Archivar Pedido",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{test_order_id}}/archive",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{test_order_id}}",
+										"archive"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Flujo completo: Cliente crea pedido → Admin procesa → Email enviado → Archivado"
+				},
+				{
+					"name": "Flujo 2 - Pedido Cancelado",
+					"item": [
+						{
+							"name": "1. Crear Pedido para Cancelar",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"cancel_order_id\", jsonData.data.id);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_cliente}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"Test Cancelación\",\n    \"customer_email\": \"cancel@example.com\",\n    \"customer_phone\": \"88882222\",\n    \"delivery_option\": \"pickup\",\n    \"payment_method\": \"cash\",\n    \"items\": [\n        {\n            \"product_id\": 2,\n            \"quantity\": 1\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Admin - Marcar En Progreso",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{cancel_order_id}}/mark-in-progress",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{cancel_order_id}}",
+										"mark-in-progress"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Admin - Cancelar Pedido",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"✅ Pedido cancelado y stock liberado\", () => {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.data.status).to.equal('cancelled');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{cancel_order_id}}/cancel",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{cancel_order_id}}",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Flujo de cancelación: Crear pedido → Marcar en progreso → Cancelar y liberar stock"
+				},
+				{
+					"name": "Flujo 3 - Pedido en Tienda",
+					"item": [
+						{
+							"name": "1. Admin - Crear Pedido en Tienda",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const jsonData = pm.response.json();",
+											"    pm.environment.set(\"instore_order_id\", jsonData.data.id);",
+											"    pm.test(\"✅ Pedido en tienda creado\", () => {",
+											"        pm.expect(jsonData.data.order_type).to.equal('in_store');",
+											"    });",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"customer_name\": \"Cliente en Tienda\",\n    \"customer_email\": \"tienda@example.com\",\n    \"customer_phone\": \"88883333\",\n    \"payment_method\": \"cash\",\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"quantity\": 1\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Admin - Completar Inmediatamente",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_admin}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/admin/orders/{{instore_order_id}}/complete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"admin",
+										"orders",
+										"{{instore_order_id}}",
+										"complete"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Flujo de tienda física: Admin crea y completa pedido inmediatamente"
+				}
+			],
+			"description": "Flujos completos de prueba que simulan casos de uso reales del sistema"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
