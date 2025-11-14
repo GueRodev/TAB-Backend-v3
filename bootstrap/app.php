@@ -25,5 +25,12 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // ========================================
+        // FORZAR RESPUESTAS JSON PARA RUTAS API
+        // ========================================
+        // Todas las rutas que empiecen con /api/* siempre retornarán JSON
+        // incluso si no incluyen el header Accept: application/json
+        $exceptions->shouldRenderJsonWhen(function ($request, Throwable $e) {
+            return $request->is('api/*');
+        });
     })->create();
