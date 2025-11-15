@@ -27,6 +27,18 @@ Route::prefix('v1')->group(function () {
     // MÓDULO DE PEDIDOS - ADMIN
     require base_path('routes/v1/admin_orders.php');
 
+    // MÓDULO DE PERFIL DE USUARIO
+    require base_path('routes/v1/profile.php');
+
+    // MÓDULO DE DIRECCIONES - CLIENTES
+    require base_path('routes/v1/addresses.php');
+
+    // MÓDULO DE DIRECCIONES - ADMIN (SOLO LECTURA)
+    require base_path('routes/v1/admin_addresses.php');
+
+    // MÓDULO DE UBICACIONES DE COSTA RICA (PÚBLICO)
+    require base_path('routes/v1/locations.php');
+
    //Ruta de ejemplo para verificar si el usuario está autenticado
     Route::middleware('auth:sanctum')->group(function () {
         // Ruta de ejemplo (la que venía por defecto)

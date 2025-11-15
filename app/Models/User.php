@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
     ];
 
@@ -83,24 +84,24 @@ class User extends Authenticatable
     }
 
     // ========================================
-    // RELACIONES descomentarlas cuando se implementen los modelos
+    // RELACIONES
     // ========================================
 
     /**
-     * Relación con direcciones del usuario
+     * Relación con direcciones del usuario (1:N)
      */
-   // public function addresses()
-   // {
-       // return $this->hasMany(Address::class);
-   // }
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 
     /**
-     * Relación con pedidos del usuario
+     * Relación con pedidos del usuario (1:N)
      */
-   // public function orders()
-   // {
-       // return $this->hasMany(Order::class);
-   // }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 
     /**
      * Relación con items del carrito del usuario
