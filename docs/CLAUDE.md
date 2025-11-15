@@ -32,7 +32,7 @@
 - Laravel Spatie Permissions instalado
 - Roles creados: **Super Admin** y **Cliente**
 - Tabla `users` migrada con campos: name, email, password
-  - **NOTA:** El campo `phone` NO está en el modelo User. Se implementará en la migración `addresses` en la Fase 5.
+
 - Modelo User con trait `HasRoles`
 - AuthController implementado:
   - `/api/v1/register` - Registro con asignación automática de rol Cliente
