@@ -148,10 +148,16 @@ class StoreOnlineOrderRequest extends FormRequest
         $cantonId = $this->input('shipping_address.canton_id');
         $districtId = $this->input('shipping_address.district_id');
 
-        // Verificar que cantón pertenece a la provincia
-        if ($provinceId && $cantonId) {
-            $canton = CrLocation::find($cantonId);
-            if (!$canton || $canton->parent_id != $provinceId) {
+        // Obtener los registros
+        $province = $provinceId ? CrLocation::find($provinceId) : null;
+        $canton = $cantonId ? CrLocation::find($cantonId) : null;
+        $district = $districtId ? CrLocation::find($districtId) : null;
+
+        // Verificar que el cantón pertenece a la provincia
+        // Comparamos las columnas province_id de ambos registros
+        if ($province && $canton) {
+            // Verificar que el cantón existe, es de tipo canton, y pertenece a la provincia
+            if ($canton->type !== 'canton' || $canton->province_id != $province->province_id) {
                 $validator->errors()->add(
                     'shipping_address.canton_id',
                     'El cantón seleccionado no pertenece a la provincia'
@@ -159,10 +165,11 @@ class StoreOnlineOrderRequest extends FormRequest
             }
         }
 
-        // Verificar que distrito pertenece al cantón
-        if ($cantonId && $districtId) {
-            $district = CrLocation::find($districtId);
-            if (!$district || $district->parent_id != $cantonId) {
+        // Verificar que el distrito pertenece al cantón
+        // Comparamos las columnas canton_id de ambos registros
+        if ($canton && $district) {
+            // Verificar que el distrito existe, es de tipo district, y pertenece al cantón
+            if ($district->type !== 'district' || $district->canton_id != $canton->canton_id) {
                 $validator->errors()->add(
                     'shipping_address.district_id',
                     'El distrito seleccionado no pertenece al cantón'

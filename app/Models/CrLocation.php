@@ -18,6 +18,10 @@ class CrLocation extends Model
     /**
      * Obtener estructura jerárquica completa
      * Retorna array con provincias > cantones > distritos
+     *
+     * IMPORTANTE: Los IDs retornados son los 'id' de los registros (autoincremental),
+     * NO los province_id o canton_id del JSON original.
+     * Estos IDs son los que se deben usar en el frontend para shipping_address.
      */
     public static function getHierarchy(): array
     {
@@ -28,7 +32,7 @@ class CrLocation extends Model
         // Iterar sobre las provincias
         foreach ($locations->where('type', 'province') as $province) {
             $provinceData = [
-                'id' => $province->province_id,
+                'id' => $province->id,  // ID del registro (para usar en el frontend)
                 'nombre' => $province->province_name,
                 'cantones' => []
             ];
@@ -39,16 +43,23 @@ class CrLocation extends Model
 
             foreach ($cantones as $canton) {
                 $cantonData = [
-                    'id' => $canton->canton_id,
+                    'id' => $canton->id,  // ID del registro (para usar en el frontend)
                     'nombre' => $canton->canton_name,
                     'distritos' => []
                 ];
 
                 // Obtener distritos de este cantón
+                // CAMBIO: Ahora retorna objetos con id y nombre en lugar de solo strings
                 $distritos = $locations->where('type', 'district')
                     ->where('province_id', $province->province_id)
                     ->where('canton_id', $canton->canton_id)
-                    ->pluck('district_name')
+                    ->map(function ($distrito) {
+                        return [
+                            'id' => $distrito->id,  // ID del registro (para usar en el frontend)
+                            'nombre' => $distrito->district_name
+                        ];
+                    })
+                    ->values()  // Reindexa el array
                     ->toArray();
 
                 $cantonData['distritos'] = $distritos;

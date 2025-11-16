@@ -399,9 +399,9 @@ class OrderService
 
         // Construir el snapshot manualmente con los nombres
         return [
-            'province' => $province->name,        // Ej: "San José"
-            'canton' => $canton->name,            // Ej: "Escazú"
-            'district' => $district->name,        // Ej: "San Rafael"
+            'province' => $province->province_name,    // Ej: "San José"
+            'canton' => $canton->canton_name,          // Ej: "Puriscal"
+            'district' => $district->district_name,    // Ej: "San Antonio"
             'address_details' => $data['shipping_address']['address_details'], // Ej: "Casa #123, portón azul"
         ];
     }
