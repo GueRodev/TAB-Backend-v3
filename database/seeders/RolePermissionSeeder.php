@@ -69,10 +69,10 @@ class RolePermissionSeeder extends Seeder
         // ==================================================
         // CREAR ROLES
         // ==================================================
-        
+
         // Rol: Super Admin
         $superAdmin = Role::create(['name' => 'Super Admin']);
-        
+
         // Rol: Cliente
         $cliente = Role::create(['name' => 'Cliente']);
         
@@ -82,29 +82,29 @@ class RolePermissionSeeder extends Seeder
         
         // Super Admin - Todos los permisos
         $superAdmin->givePermissionTo(Permission::all());
-        
+
         // Cliente - Permisos limitados
         $cliente->givePermissionTo([
             // Productos (solo ver)
             'view products',
             'view categories',
-            
+
             // Pedidos (crear desde carrito y ver los suyos)
             'view own orders',
             'create cart orders',
-            
+
             // Perfil y datos personales
             'view own profile',
             'edit own profile',
             'manage own addresses',
             'manage own cart',
-            
+
             // Favoritos
             'add to favorites',
             'remove from favorites',
             'view own favorites',
         ]);
-        
+
         // Log de éxito
         $this->command->info('✅ Roles y permisos creados exitosamente');
         $this->command->info('✅ Super Admin: ' . $superAdmin->permissions->count() . ' permisos asignados');

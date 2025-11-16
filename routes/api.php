@@ -39,6 +39,9 @@ Route::prefix('v1')->group(function () {
     // MÓDULO DE UBICACIONES DE COSTA RICA (PÚBLICO)
     require base_path('routes/v1/locations.php');
 
+    // MÓDULO DE GESTIÓN DE USUARIOS - ADMIN
+    require base_path('routes/v1/users.php');
+
    //Ruta de ejemplo para verificar si el usuario está autenticado
     Route::middleware('auth:sanctum')->group(function () {
         // Ruta de ejemplo (la que venía por defecto)

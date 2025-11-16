@@ -39,8 +39,9 @@ class UpdateAddressRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            // Obtener la dirección actual
-            $address = $this->route('address');
+            // Obtener la dirección actual usando el ID de la ruta
+            $addressId = $this->route('address');
+            $address = \App\Models\Address::findOrFail($addressId);
 
             // Preparar valores para validación (usar nuevos valores o mantener existentes)
             $province = $this->input('province', $address->province);
