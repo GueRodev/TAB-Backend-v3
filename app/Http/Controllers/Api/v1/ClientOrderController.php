@@ -65,15 +65,24 @@ class ClientOrderController extends Controller
 
     /**
      * Crear un pedido online (desde carrito)
+     *
      * Ruta: routes/v1/orders.php
+     *
+     * IMPORTANTE:
+     * - Solo usuarios autenticados pueden crear pedidos (validado en StoreOnlineOrderRequest)
+     * - El usuario SIEMPRE existe porque el authorize() del request lo requiere
+     * - Auto-completa datos del cliente desde el perfil si no se envían
+     * - Acepta address_id (dirección guardada) o campos manuales de ubicación
      */
     public function store(StoreOnlineOrderRequest $request): JsonResponse
     {
         try {
             $user = $request->user();
+
+            // IMPORTANTE: $user SIEMPRE existe porque StoreOnlineOrderRequest::authorize() lo requiere
             $order = $this->orderService->createOnlineOrder(
                 $request->validated(),
-                $user ? $user->id : null
+                $user->id // Ya no es nullable
             );
 
             return response()->json([

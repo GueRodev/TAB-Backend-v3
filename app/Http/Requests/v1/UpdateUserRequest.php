@@ -60,14 +60,6 @@ class UpdateUserRequest extends FormRequest
                 'required',
                 'string',
                 Rule::in(['Super Admin', 'Moderador']), // Solo estos roles permitidos
-
-                // VALIDACIÓN ESPECIAL: Prohibir cambiar propio rol
-                // Si el ID del usuario a editar es igual al ID del usuario autenticado
-                Rule::when(
-                    $this->route('user') == auth()->id(), // ¿Es el mismo usuario?
-                    fn() => Rule::prohibitedIf(true)->__toString(), // Sí → Prohibir cambio
-                    fn() => [] // No → Permitir cambio
-                ),
             ],
         ];
     }
@@ -89,7 +81,17 @@ class UpdateUserRequest extends FormRequest
             // Obtener el usuario que se está editando
             $user = User::findOrFail($this->route('user'));
 
-            // VALIDACIÓN CRÍTICA: No permitir cambiar el rol del último Super Admin
+            // VALIDACIÓN 1: No permitir que un usuario cambie su propio rol
+            // Esto evita que un admin se quite permisos por error
+            if ($this->route('user') == auth()->id()) {
+                $validator->errors()->add(
+                    'role',
+                    'No puedes cambiar tu propio rol por razones de seguridad'
+                );
+                return; // Salir para no ejecutar más validaciones
+            }
+
+            // VALIDACIÓN 2: No permitir cambiar el rol del último Super Admin
             // Esto evita que el sistema quede sin administradores
             if ($this->isLastSuperAdmin($user)) {
                 $validator->errors()->add(
@@ -156,7 +158,6 @@ class UpdateUserRequest extends FormRequest
 
             'role.required' => 'El rol es obligatorio',
             'role.in' => 'El rol debe ser Super Admin o Moderador',
-            'role.prohibited_if' => 'No puedes cambiar tu propio rol',
         ];
     }
 

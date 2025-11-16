@@ -83,7 +83,7 @@ class StoreUserRequest extends FormRequest
             'password.confirmed' => 'Las contraseñas no coinciden',
 
             'role.required' => 'El rol es obligatorio',
-            'role.in' => 'El rol debe ser Super Admin o Moderador',
+            'role.in' => 'Solo se pueden crear usuarios Super Admin o Moderador',
         ];
     }
 

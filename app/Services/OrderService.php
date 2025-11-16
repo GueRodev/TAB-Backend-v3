@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Address;
+use App\Models\CrLocation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderShippingAddress;
@@ -23,8 +25,17 @@ class OrderService
 
     /**
      * Crea un pedido online (desde carrito del cliente)
+     *
+     * INTEGRACIÓN CON ADDRESSES:
+     * - Auto-completa datos del cliente desde el perfil si no se envían
+     * - Acepta address_id (dirección guardada) o campos manuales
+     * - Usa Address::toShippingSnapshot() para crear snapshot de dirección
+     *
+     * IMPORTANTE:
+     * - Solo usuarios AUTENTICADOS pueden crear pedidos online
+     * - El parámetro $userId SIEMPRE tiene valor (validado en StoreOnlineOrderRequest)
      */
-    public function createOnlineOrder(array $data, ?int $userId): Order
+    public function createOnlineOrder(array $data, int $userId): Order
     {
         DB::beginTransaction();
         try {
@@ -37,6 +48,9 @@ class OrderService
                 );
             }
 
+            // AUTO-COMPLETAR datos del cliente desde el perfil si no se enviaron
+            $customerData = $this->prepareCustomerData($data, $userId);
+
             // Calcular totales
             $subtotal = $this->calculateSubtotal($data['items']);
             $shippingCost = $data['delivery_option'] === 'delivery' ? 0 : 0; // TODO: Implementar cálculo de envío
@@ -48,9 +62,9 @@ class OrderService
                 'user_id' => $userId,
                 'order_type' => 'online',
                 'status' => 'pending',
-                'customer_name' => $data['customer_name'],
-                'customer_phone' => $data['customer_phone'],
-                'customer_email' => $data['customer_email'],
+                'customer_name' => $customerData['name'],
+                'customer_phone' => $customerData['phone'],
+                'customer_email' => $customerData['email'],
                 'delivery_option' => $data['delivery_option'],
                 'payment_method' => $data['payment_method'],
                 'subtotal' => $subtotal,
@@ -63,13 +77,16 @@ class OrderService
             $this->createOrderItems($order, $data['items']);
 
             // Crear dirección de envío si es delivery
-            if ($data['delivery_option'] === 'delivery' && isset($data['shipping_address'])) {
+            // Usa Address::toShippingSnapshot() o resuelve ubicaciones manuales
+            if ($data['delivery_option'] === 'delivery') {
+                $shippingData = $this->prepareShippingAddress($data);
+
                 OrderShippingAddress::create([
                     'order_id' => $order->id,
-                    'province' => $data['shipping_address']['province'],
-                    'canton' => $data['shipping_address']['canton'],
-                    'district' => $data['shipping_address']['district'],
-                    'address_details' => $data['shipping_address']['address_details'],
+                    'province' => $shippingData['province'],
+                    'canton' => $shippingData['canton'],
+                    'district' => $shippingData['district'],
+                    'address_details' => $shippingData['address_details'],
                 ]);
             }
 
@@ -77,7 +94,7 @@ class OrderService
             $this->stockService->reserveStock(
                 $data['items'],
                 $order->id,
-                $userId ?? 1 // Si es guest, usar ID 1 (Super Admin)
+                $userId
             );
 
             DB::commit();
@@ -303,5 +320,89 @@ class OrderService
                 'subtotal' => $product->price * $item['quantity'],
             ]);
         }
+    }
+
+    /**
+     * Prepara los datos del cliente para el pedido
+     *
+     * AUTO-COMPLETADO DESDE EL PERFIL:
+     * - Si el usuario envió los datos (customer_name, customer_phone, customer_email), los usa
+     * - Si NO los envió, los toma automáticamente del perfil del usuario autenticado
+     *
+     * BENEFICIO:
+     * - El usuario no tiene que escribir sus datos en cada pedido
+     * - Permite override si el usuario quiere usar datos diferentes (ej: enviar a otra persona)
+     *
+     * IMPORTANTE:
+     * - Este método SIEMPRE recibe un userId válido
+     * - Solo usuarios autenticados pueden crear pedidos online (validado en StoreOnlineOrderRequest)
+     *
+     * @param array $data Datos del request
+     * @param int $userId ID del usuario autenticado (SIEMPRE presente)
+     * @return array Array con keys: name, phone, email
+     */
+    private function prepareCustomerData(array $data, int $userId): array
+    {
+        // Cargar el perfil del usuario autenticado para auto-completar datos
+        $user = \App\Models\User::findOrFail($userId);
+
+        return [
+            // Si envió customer_name, usarlo. Si no, usar nombre del perfil
+            'name' => $data['customer_name'] ?? $user->name,
+
+            // Si envió customer_phone, usarlo. Si no, usar teléfono del perfil
+            'phone' => $data['customer_phone'] ?? $user->phone,
+
+            // Si envió customer_email, usarlo. Si no, usar email del perfil
+            'email' => $data['customer_email'] ?? $user->email,
+        ];
+    }
+
+    /**
+     * Prepara los datos de dirección de envío para el pedido
+     *
+     * OPCIÓN A: Usar dirección guardada (address_id)
+     * - Carga el modelo Address
+     * - Usa el método toShippingSnapshot() para obtener el snapshot
+     *
+     * OPCIÓN B: Usar campos manuales (province_id, canton_id, district_id)
+     * - Resuelve los nombres de las ubicaciones desde cr_locations
+     * - Construye el snapshot manualmente
+     *
+     * FORMATO DE RETORNO:
+     * Array con keys: province, canton, district, address_details
+     * (Todos son strings, NO IDs - es un snapshot del momento de compra)
+     *
+     * @param array $data Datos del request
+     * @return array Snapshot de la dirección con nombres resueltos
+     */
+    private function prepareShippingAddress(array $data): array
+    {
+        // OPCIÓN A: Usar dirección guardada
+        // Si el usuario seleccionó una dirección de su perfil
+        if (isset($data['address_id']) && $data['address_id']) {
+            $address = Address::findOrFail($data['address_id']);
+
+            // toShippingSnapshot() ya resuelve los nombres de las ubicaciones
+            // y retorna: ['province' => 'San José', 'canton' => 'Escazú', ...]
+            return $address->toShippingSnapshot();
+        }
+
+        // OPCIÓN B: Usar campos manuales
+        // Si el usuario escribió la dirección manualmente en el checkout
+        // Necesitamos resolver los nombres de las ubicaciones desde los IDs
+
+        // Cargar las ubicaciones desde la BD para obtener sus nombres
+        $province = CrLocation::findOrFail($data['shipping_address']['province_id']);
+        $canton = CrLocation::findOrFail($data['shipping_address']['canton_id']);
+        $district = CrLocation::findOrFail($data['shipping_address']['district_id']);
+
+        // Construir el snapshot manualmente con los nombres
+        return [
+            'province' => $province->name,        // Ej: "San José"
+            'canton' => $canton->name,            // Ej: "Escazú"
+            'district' => $district->name,        // Ej: "San Rafael"
+            'address_details' => $data['shipping_address']['address_details'], // Ej: "Casa #123, portón azul"
+        ];
     }
 }
