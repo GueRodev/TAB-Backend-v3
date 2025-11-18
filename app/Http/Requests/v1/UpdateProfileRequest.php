@@ -25,8 +25,9 @@ class UpdateProfileRequest extends FormRequest
         $user = auth()->user();
 
         $rules = [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
             'email' => [
+                'sometimes',
                 'required',
                 'string',
                 'email',
@@ -36,12 +37,8 @@ class UpdateProfileRequest extends FormRequest
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
 
-        // Validación condicional: phone es REQUERIDO para Cliente, OPCIONAL para Super Admin
-        if ($user->hasRole('Cliente')) {
-            $rules['phone'] = ['required', 'string', 'max:20'];
-        } else {
-            $rules['phone'] = ['nullable', 'string', 'max:20'];
-        }
+        // Validación del phone: permitir actualizaciones parciales
+        $rules['phone'] = ['sometimes', 'nullable', 'string', 'max:20'];
 
         return $rules;
     }

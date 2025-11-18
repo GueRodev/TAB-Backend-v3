@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],   // Permite las rutas de la API y el CSRF de Sanctum
+    'paths' => ['api/*'],   // Permite las rutas de la API (CSRF no necesario en API Token mode)
 
     'allowed_methods' => ['*'],     // Permite todos los metodos HTTP (GET, POST, PUT, DELETE, etc.)
 
@@ -35,6 +35,6 @@ return [
 
     'max_age' => 0,   // Permite el uso de credenciales en las solicitudes
 
-    'supports_credentials' => true,   // Importante para Sanctum permite el uso de cookies y tokens de autenticacion
+    'supports_credentials' => false,   // false para API Token mode (Bearer tokens), true solo para SPA mode con cookies
 
 ];
