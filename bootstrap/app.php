@@ -12,8 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
-      
+        // ========================================
+        // DESHABILITADO: statefulApi() requiere CSRF tokens
+        // ========================================
+        // Comentado porque estamos usando Bearer Token Authentication (Sanctum)
+        // Si en el futuro usas SPA mode con cookies, descomenta la siguiente línea:
+        // $middleware->statefulApi();
+
         // ========================================
         // REGISTRAR MIDDLEWARE DE SPATIE
         // ========================================
