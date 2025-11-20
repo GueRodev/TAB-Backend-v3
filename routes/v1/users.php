@@ -24,6 +24,10 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // GET /api/v1/users/{id}
     Route::get('/users/{user}', [UserController::class, 'show']);
 
+    // Ver permisos de un usuario específico
+    // GET /api/v1/users/{id}/permissions
+    Route::get('/users/{user}/permissions', [UserController::class, 'getPermissions']);
+
     // Actualizar usuario existente
     // PUT/PATCH /api/v1/users/{id}
     // Body: { name?, email?, password?, password_confirmation?, role? }

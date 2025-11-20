@@ -388,6 +388,70 @@ class UserController extends Controller
     }
 
     /**
+     * Obtener permisos de un usuario específico
+     *
+     * GET /api/v1/users/{id}/permissions
+     *
+     * ENDPOINT EXCLUSIVO PARA CONSULTAR PERMISOS:
+     * - Muestra todos los permisos del usuario (directos + heredados del rol)
+     * - Solo puede consultar usuarios Admin o Moderador
+     * - Retorna lista de nombres de permisos
+     *
+     * @param int $id ID del usuario
+     * @return JsonResponse Lista de permisos del usuario
+     */
+    public function getPermissions(int $id): JsonResponse
+    {
+        try {
+            // Buscar usuario o retornar 404 si no existe
+            $user = User::findOrFail($id);
+
+            // VALIDACIÓN: Verificar que sea Admin o Moderador
+            if (!$user->hasAnyRole(['Super Admin', 'Moderador'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Solo se pueden consultar permisos de usuarios Admin o Moderador'
+                ], 403);
+            }
+
+            // Obtener todos los permisos (directos + heredados del rol)
+            $permissions = $user->getAllPermissions()->pluck('name');
+
+            // Obtener el rol del usuario para contexto
+            $role = $user->getRoleNames()->first();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'role' => $role,
+                    'permissions' => $permissions,
+                    'permissions_count' => $permissions->count()
+                ]
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no encontrado'
+            ], 404);
+
+        } catch (Exception $e) {
+            Log::error('Error al obtener permisos del usuario: ' . $e->getMessage(), [
+                'user_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los permisos del usuario',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
      * Verifica si el usuario es el último Super Admin del sistema
      *
      * LÓGICA:
