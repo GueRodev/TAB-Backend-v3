@@ -183,13 +183,66 @@ class ProductController extends Controller
     {
         $product = Product::withTrashed()->findOrFail($id);
         $product->restore();
-        
+
         return response()->json([
             'message' => 'Producto restaurado exitosamente',
             'product' => $product
         ]);
     }
+
+    /**
+     * Obtener productos eliminados (recycle bin).
+     * GET /api/v1/products/recycle-bin
+     */
+    public function recycleBin()
+    {
+        $deletedProducts = Product::onlyTrashed()
+            ->with(['category' => function($query) {
+                $query->withTrashed(); // Incluir categoría aunque esté eliminada
+            }])
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+
+        return response()->json($deletedProducts);
+    }
+
+    /**
+     * Obtener historial de movimientos de stock de un producto.
+     * GET /api/v1/products/{id}/stock-movements
+     */
+    public function stockMovements($id)
+    {
+        $product = Product::findOrFail($id);
+
+        $movements = $product->stockMovements()
+            ->with('user:id,name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($movements);
+    }
     
+    /**
+     * Toggle featured status.
+     * PATCH /api/v1/products/{id}/featured
+     */
+    public function toggleFeatured($id, Request $request)
+    {
+        $request->validate([
+            'is_featured' => 'required|boolean',
+        ]);
+
+        $product = Product::findOrFail($id);
+        $product->update(['is_featured' => $request->is_featured]);
+
+        return response()->json([
+            'message' => $request->is_featured
+                ? 'Producto marcado como destacado'
+                : 'Producto desmarcado como destacado',
+            'product' => $product->fresh()
+        ]);
+    }
+
     /**
      * Ajustar stock de producto.
      * POST /api/v1/products/{id}/stock
