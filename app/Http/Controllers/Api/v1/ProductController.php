@@ -109,24 +109,30 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $oldStock = $product->stock;
-        
+        $oldCategoryId = $product->category_id;
+
         $data = $request->validated();
         $data['slug'] = Str::slug($data['name']);
-        
+
         // Remover 'image' del array
         unset($data['image']);
-        
+
+        // Si se cambió la categoría manualmente, limpiar original_category_id
+        if (isset($data['category_id']) && $data['category_id'] != $oldCategoryId) {
+            $data['original_category_id'] = null;
+        }
+
         $product->update($data);
-        
+
         // Actualizar imagen si viene nueva
         $this->handleImageUpdate($request, $product);
-        
+
         // Registrar movimiento de stock si cambió
         if ($oldStock != $product->stock) {
-            $this->createStockMovement($product, 'ajuste', 
+            $this->createStockMovement($product, 'ajuste',
                 $product->stock - $oldStock, $oldStock, 'Actualización manual');
         }
-        
+
         return response()->json([
             'message' => 'Producto actualizado exitosamente',
             'product' => $product->fresh()

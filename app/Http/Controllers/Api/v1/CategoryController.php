@@ -105,37 +105,38 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
-        
+
         // Prevenir eliminación de categoría protegida
         if ($category->is_protected) {
             return response()->json([
                 'message' => 'No se puede eliminar una categoría protegida'
             ], 403);
         }
-        
+
         // Validar que existe categoría "Otros"
         $otherCategory = Category::where('is_protected', true)->first();
-        
+
         if (!$otherCategory) {
             return response()->json([
                 'message' => 'Categoría protegida no encontrada. Error del sistema.',
                 'error' => 'PROTECTED_CATEGORY_MISSING'
             ], 500);
         }
-        
+
         // Contar productos antes de reasignar
         $productsCount = $category->products()->count();
-        
-        // REASIGNAR productos a "Otros" ANTES de eliminar
+
+        // GUARDAR LA CATEGORÍA ORIGINAL y REASIGNAR productos a "Otros" ANTES de eliminar
         if ($productsCount > 0) {
             $category->products()->update([
+                'original_category_id' => $id, // Guardar la categoría original
                 'category_id' => $otherCategory->id
             ]);
         }
-        
+
         // Eliminar categoría (soft delete)
         $category->delete();
-        
+
         return response()->json([
             'message' => 'Categoría eliminada exitosamente',
             'productos_reasignados' => $productsCount
@@ -149,37 +150,46 @@ class CategoryController extends Controller
     public function forceDelete($id)
     {
         $category = Category::withTrashed()->findOrFail($id);
-        
+
         if ($category->is_protected) {
             return response()->json([
                 'message' => 'No se puede eliminar una categoría protegida'
             ], 403);
         }
-        
+
         // Validar que existe categoría "Otros"
         $otherCategory = Category::where('is_protected', true)->first();
-        
+
         if (!$otherCategory) {
             return response()->json([
                 'message' => 'Categoría protegida no encontrada. Error del sistema.',
                 'error' => 'PROTECTED_CATEGORY_MISSING'
             ], 500);
         }
-        
-        // REASIGNAR productos si aún tiene
+
+        // REASIGNAR productos si aún tiene (los que tienen category_id de esta categoría)
         $productsCount = $category->products()->count();
-        
+
         if ($productsCount > 0) {
             $category->products()->update([
                 'category_id' => $otherCategory->id
             ]);
         }
-        
+
+        // LIMPIAR referencias de original_category_id para productos que estaban esperando esta categoría
+        $productsWithOriginal = \App\Models\Product::where('original_category_id', $id)->count();
+
+        if ($productsWithOriginal > 0) {
+            \App\Models\Product::where('original_category_id', $id)
+                ->update(['original_category_id' => null]);
+        }
+
         $category->forceDelete();
-        
+
         return response()->json([
             'message' => 'Categoría eliminada permanentemente de forma exitosa',
-            'productos_reasignados' => $productsCount
+            'productos_reasignados' => $productsCount,
+            'referencias_limpiadas' => $productsWithOriginal
         ]);
     }
     
@@ -191,10 +201,41 @@ class CategoryController extends Controller
     {
         $category = Category::withTrashed()->findOrFail($id);
         $category->restore();
-        
+
+        // RESTAURAR PRODUCTOS a su categoría original
+        $productsRestored = \App\Models\Product::where('original_category_id', $id)
+            ->update([
+                'category_id' => $id,
+                'original_category_id' => null // Limpiar la categoría original
+            ]);
+
         return response()->json([
             'message' => 'Categoría restaurada exitosamente',
-            'category' => $category
+            'category' => $category,
+            'productos_restaurados' => $productsRestored
         ]);
+    }
+
+    /**
+     * Obtener categorías y subcategorías eliminadas (recycle bin).
+     * GET /api/v1/categories/recycle-bin
+     */
+    public function recycleBin()
+    {
+        // Obtener todas las categorías eliminadas (incluyendo subcategorías)
+        $deletedCategories = Category::onlyTrashed()
+            ->with(['parent' => function($query) {
+                $query->withTrashed(); // Include parent even if it's also deleted
+            }])
+            ->withCount('products')
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+
+        // Agregar el contador de productos que serán restaurados para cada categoría
+        $deletedCategories->each(function($category) {
+            $category->restorable_products_count = \App\Models\Product::where('original_category_id', $category->id)->count();
+        });
+
+        return response()->json($deletedCategories);
     }
 }

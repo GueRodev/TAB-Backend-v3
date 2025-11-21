@@ -11,16 +11,17 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 
-        'slug', 
-        'brand', 
-        'description', 
-        'price', 
-        'stock', 
-        'sku', 
-        'image_url', 
-        'category_id', 
-        'status', 
+        'name',
+        'slug',
+        'brand',
+        'description',
+        'price',
+        'stock',
+        'sku',
+        'image_url',
+        'category_id',
+        'original_category_id',
+        'status',
         'is_featured'
     ];
 
@@ -34,6 +35,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function originalCategory()
+    {
+        return $this->belongsTo(Category::class, 'original_category_id');
     }
 
     public function stockMovements()
