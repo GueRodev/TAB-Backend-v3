@@ -236,6 +236,31 @@ class AdminOrderController extends Controller
     }
 
     /**
+     * Desarchivar un pedido (devolver a completado)
+     * Ruta: routes/v1/admin_order.php
+     */
+    public function unarchive(string $id): JsonResponse
+    {
+        try {
+            $order = Order::findOrFail($id);
+            $updatedOrder = $this->orderService->unarchiveOrder($order);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pedido desarchivado exitosamente',
+                'data' => $updatedOrder,
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al desarchivar el pedido',
+                'error' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
      * Eliminar un pedido (soft delete)
      * Ruta: routes/v1/admin_order.php
      */

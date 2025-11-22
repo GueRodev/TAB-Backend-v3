@@ -27,6 +27,9 @@ Route::prefix('v1')->group(function () {
     // MÓDULO DE PEDIDOS - ADMIN
     require base_path('routes/v1/admin_orders.php');
 
+    // MÓDULO DE STOCK MOVEMENTS
+    require base_path('routes/v1/stock_movements.php');
+
     // MÓDULO DE PERFIL DE USUARIO
     require base_path('routes/v1/profile.php');
 

@@ -26,6 +26,9 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // Archivar pedido
     Route::post('/admin/orders/{id}/archive', [AdminOrderController::class, 'archive']);
 
+    // Desarchivar pedido
+    Route::patch('/admin/orders/{id}/unarchive', [AdminOrderController::class, 'unarchive']);
+
     // Eliminar pedido (soft delete)
     Route::delete('/admin/orders/{id}', [AdminOrderController::class, 'destroy']);
 });

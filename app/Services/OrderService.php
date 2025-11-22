@@ -262,6 +262,20 @@ class OrderService
     }
 
     /**
+     * Desarchiva un pedido (lo devuelve a estado completado)
+     */
+    public function unarchiveOrder(Order $order): Order
+    {
+        if ($order->status !== 'archived') {
+            throw new Exception('Solo los pedidos archivados pueden ser desarchivados');
+        }
+
+        $order->update(['status' => 'completed']);
+
+        return $order->fresh();
+    }
+
+    /**
      * Elimina un pedido (soft delete)
      */
     public function deleteOrder(Order $order, int $userId): bool
@@ -365,9 +379,13 @@ class OrderService
      * - Carga el modelo Address
      * - Usa el método toShippingSnapshot() para obtener el snapshot
      *
-     * OPCIÓN B: Usar campos manuales (province_id, canton_id, district_id)
+     * OPCIÓN B: Usar campos manuales con IDs (province_id, canton_id, district_id)
      * - Resuelve los nombres de las ubicaciones desde cr_locations
      * - Construye el snapshot manualmente
+     *
+     * OPCIÓN C: Usar campos manuales con nombres (province, canton, district)
+     * - Los nombres ya vienen resueltos desde el frontend
+     * - Más flexible para frontends que usan selectores con nombres
      *
      * FORMATO DE RETORNO:
      * Array con keys: province, canton, district, address_details
@@ -388,21 +406,32 @@ class OrderService
             return $address->toShippingSnapshot();
         }
 
-        // OPCIÓN B: Usar campos manuales
-        // Si el usuario escribió la dirección manualmente en el checkout
-        // Necesitamos resolver los nombres de las ubicaciones desde los IDs
+        $shippingAddress = $data['shipping_address'];
 
-        // Cargar las ubicaciones desde la BD para obtener sus nombres
-        $province = CrLocation::findOrFail($data['shipping_address']['province_id']);
-        $canton = CrLocation::findOrFail($data['shipping_address']['canton_id']);
-        $district = CrLocation::findOrFail($data['shipping_address']['district_id']);
+        // OPCIÓN B: Usar campos manuales con IDs
+        // Si el frontend envía province_id, canton_id, district_id
+        if (isset($shippingAddress['province_id'])) {
+            // Cargar las ubicaciones desde la BD para obtener sus nombres
+            $province = CrLocation::findOrFail($shippingAddress['province_id']);
+            $canton = CrLocation::findOrFail($shippingAddress['canton_id']);
+            $district = CrLocation::findOrFail($shippingAddress['district_id']);
 
-        // Construir el snapshot manualmente con los nombres
+            // Construir el snapshot manualmente con los nombres
+            return [
+                'province' => $province->province_name,
+                'canton' => $canton->canton_name,
+                'district' => $district->district_name,
+                'address_details' => $shippingAddress['address_details'],
+            ];
+        }
+
+        // OPCIÓN C: Usar campos manuales con nombres
+        // Si el frontend envía province, canton, district como strings
         return [
-            'province' => $province->province_name,    // Ej: "San José"
-            'canton' => $canton->canton_name,          // Ej: "Puriscal"
-            'district' => $district->district_name,    // Ej: "San Antonio"
-            'address_details' => $data['shipping_address']['address_details'], // Ej: "Casa #123, portón azul"
+            'province' => $shippingAddress['province'],
+            'canton' => $shippingAddress['canton'],
+            'district' => $shippingAddress['district'],
+            'address_details' => $shippingAddress['address_details'],
         ];
     }
 }
