@@ -290,13 +290,28 @@ class OrderService
 
     /**
      * Genera un número de pedido único
+     * Usa el máximo order_number del día + 1 para evitar colisiones
      */
     protected function generateOrderNumber(): string
     {
         $date = now()->format('Ymd');
-        $count = Order::whereDate('created_at', now()->toDateString())->count() + 1;
+        $prefix = "ORD-{$date}-";
 
-        return sprintf('ORD-%s-%04d', $date, $count);
+        // Buscar el último order_number del día (incluye soft deleted)
+        $lastOrder = Order::withTrashed()
+            ->where('order_number', 'like', $prefix . '%')
+            ->orderByRaw("CAST(SUBSTRING(order_number FROM '\d+$') AS INTEGER) DESC")
+            ->first();
+
+        if ($lastOrder) {
+            // Extraer el número y sumar 1
+            $lastNumber = (int) substr($lastOrder->order_number, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return sprintf('%s%04d', $prefix, $newNumber);
     }
 
     /**
