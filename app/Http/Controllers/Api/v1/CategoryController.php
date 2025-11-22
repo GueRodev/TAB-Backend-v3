@@ -167,13 +167,39 @@ class CategoryController extends Controller
             ], 500);
         }
 
-        // REASIGNAR productos si aún tiene (los que tienen category_id de esta categoría)
-        $productsCount = $category->products()->count();
+        $productsCount = 0;
+        $subcategoriesDeleted = 0;
 
-        if ($productsCount > 0) {
+        // PRIMERO: Manejar subcategorías (children) si es una categoría padre
+        $subcategories = Category::withTrashed()->where('parent_id', $id)->get();
+
+        foreach ($subcategories as $subcategory) {
+            // Reasignar productos de la subcategoría a "Otros"
+            $subProductsCount = $subcategory->products()->count();
+            if ($subProductsCount > 0) {
+                $subcategory->products()->update([
+                    'category_id' => $otherCategory->id
+                ]);
+                $productsCount += $subProductsCount;
+            }
+
+            // Limpiar referencias original_category_id de la subcategoría
+            \App\Models\Product::where('original_category_id', $subcategory->id)
+                ->update(['original_category_id' => null]);
+
+            // Eliminar permanentemente la subcategoría
+            $subcategory->forceDelete();
+            $subcategoriesDeleted++;
+        }
+
+        // SEGUNDO: Reasignar productos directos de esta categoría
+        $directProductsCount = $category->products()->count();
+
+        if ($directProductsCount > 0) {
             $category->products()->update([
                 'category_id' => $otherCategory->id
             ]);
+            $productsCount += $directProductsCount;
         }
 
         // LIMPIAR referencias de original_category_id para productos que estaban esperando esta categoría
@@ -189,6 +215,7 @@ class CategoryController extends Controller
         return response()->json([
             'message' => 'Categoría eliminada permanentemente de forma exitosa',
             'productos_reasignados' => $productsCount,
+            'subcategorias_eliminadas' => $subcategoriesDeleted,
             'referencias_limpiadas' => $productsWithOriginal
         ]);
     }
