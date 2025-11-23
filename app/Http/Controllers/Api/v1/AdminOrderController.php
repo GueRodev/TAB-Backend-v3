@@ -283,4 +283,66 @@ class AdminOrderController extends Controller
             ], 422);
         }
     }
+
+    /**
+     * Listar pedidos eliminados (soft deleted)
+     * Ruta: routes/v1/admin_order.php
+     */
+    public function trashed(Request $request): JsonResponse
+    {
+        try {
+            $query = Order::onlyTrashed()
+                ->with(['items', 'shippingAddress', 'user'])
+                ->when($request->filled('order_type'), function ($q) use ($request) {
+                    $q->where('order_type', $request->order_type);
+                })
+                ->when($request->filled('customer_email'), function ($q) use ($request) {
+                    $q->where('customer_email', 'LIKE', '%' . $request->customer_email . '%');
+                })
+                ->when($request->filled('order_number'), function ($q) use ($request) {
+                    $q->where('order_number', 'LIKE', '%' . $request->order_number . '%');
+                })
+                ->orderBy('deleted_at', 'desc');
+
+            $perPage = $request->input('per_page', 15);
+            $orders = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $orders,
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los pedidos eliminados',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Restaurar un pedido eliminado
+     * Ruta: routes/v1/admin_order.php
+     */
+    public function restore(string $id): JsonResponse
+    {
+        try {
+            $order = Order::onlyTrashed()->findOrFail($id);
+            $order->restore();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pedido restaurado exitosamente',
+                'data' => $order->load(['items', 'shippingAddress', 'user']),
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al restaurar el pedido',
+                'error' => $e->getMessage(),
+            ], 422);
+        }
+    }
 }

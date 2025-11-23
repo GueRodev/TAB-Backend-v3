@@ -31,4 +31,10 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
 
     // Eliminar pedido (soft delete)
     Route::delete('/admin/orders/{id}', [AdminOrderController::class, 'destroy']);
+
+    // Listar pedidos eliminados (soft deleted)
+    Route::get('/admin/orders-trashed', [AdminOrderController::class, 'trashed']);
+
+    // Restaurar pedido eliminado
+    Route::patch('/admin/orders/{id}/restore', [AdminOrderController::class, 'restore']);
 });
