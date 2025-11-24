@@ -289,6 +289,38 @@ class OrderService
     }
 
     /**
+     * Elimina permanentemente un pedido (force delete)
+     * Solo se permite para pedidos que ya están en la papelera (soft deleted)
+     * Elimina también: items, dirección de envío y movimientos de stock asociados
+     */
+    public function forceDeleteOrder(Order $order): bool
+    {
+        DB::beginTransaction();
+        try {
+            // Eliminar items del pedido
+            $order->items()->delete();
+
+            // Eliminar dirección de envío si existe
+            if ($order->shippingAddress) {
+                $order->shippingAddress()->delete();
+            }
+
+            // Eliminar movimientos de stock asociados
+            $order->stockMovements()->delete();
+
+            // Eliminar permanentemente el pedido
+            $order->forceDelete();
+
+            DB::commit();
+            return true;
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
      * Genera un número de pedido único
      * Usa el máximo order_number del día + 1 para evitar colisiones
      */

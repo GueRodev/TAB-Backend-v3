@@ -37,4 +37,7 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
 
     // Restaurar pedido eliminado
     Route::patch('/admin/orders/{id}/restore', [AdminOrderController::class, 'restore']);
+
+    // Eliminar permanentemente un pedido (force delete - solo desde papelera)
+    Route::delete('/admin/orders/{id}/force', [AdminOrderController::class, 'forceDelete']);
 });

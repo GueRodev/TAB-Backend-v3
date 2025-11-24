@@ -345,4 +345,30 @@ class AdminOrderController extends Controller
             ], 422);
         }
     }
+
+    /**
+     * Eliminar permanentemente un pedido (force delete)
+     * Solo para pedidos que ya están en la papelera (soft deleted)
+     * Elimina: pedido, items, dirección de envío y movimientos de stock
+     * Ruta: routes/v1/admin_order.php
+     */
+    public function forceDelete(string $id): JsonResponse
+    {
+        try {
+            $order = Order::onlyTrashed()->findOrFail($id);
+            $this->orderService->forceDeleteOrder($order);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pedido eliminado permanentemente',
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar permanentemente el pedido',
+                'error' => $e->getMessage(),
+            ], 422);
+        }
+    }
 }
