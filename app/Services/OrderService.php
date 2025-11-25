@@ -165,20 +165,21 @@ class OrderService
         }
     }
 
-    /**
-     * Actualiza el estado de un pedido a 'in_progress'
-     * Para completar o cancelar, usar completeOrder() o cancelOrder()
-     */
-    public function markAsInProgress(Order $order): Order
-    {
-        if (!in_array($order->status, ['pending'])) {
-            throw new Exception('Solo los pedidos pendientes pueden marcarse como en proceso');
-        }
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Actualiza el estado de un pedido a 'in_progress'
+    //  * Para completar o cancelar, usar completeOrder() o cancelOrder()
+    //  */
+    // public function markAsInProgress(Order $order): Order
+    // {
+    //     if (!in_array($order->status, ['pending'])) {
+    //         throw new Exception('Solo los pedidos pendientes pueden marcarse como en proceso');
+    //     }
 
-        $order->update(['status' => 'in_progress']);
+    //     $order->update(['status' => 'in_progress']);
 
-        return $order->fresh();
-    }
+    //     return $order->fresh();
+    // }
 
     /**
      * Completa un pedido (confirma venta y envía email)
@@ -247,33 +248,35 @@ class OrderService
         }
     }
 
-    /**
-     * Archiva un pedido completado
-     */
-    public function archiveOrder(Order $order): Order
-    {
-        if (!$order->canBeArchived()) {
-            throw new Exception('Solo los pedidos completados pueden ser archivados');
-        }
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Archiva un pedido completado
+    //  */
+    // public function archiveOrder(Order $order): Order
+    // {
+    //     if (!$order->canBeArchived()) {
+    //         throw new Exception('Solo los pedidos completados pueden ser archivados');
+    //     }
 
-        $order->update(['status' => 'archived']);
+    //     $order->update(['status' => 'archived']);
 
-        return $order->fresh();
-    }
+    //     return $order->fresh();
+    // }
 
-    /**
-     * Desarchiva un pedido (lo devuelve a estado completado)
-     */
-    public function unarchiveOrder(Order $order): Order
-    {
-        if ($order->status !== 'archived') {
-            throw new Exception('Solo los pedidos archivados pueden ser desarchivados');
-        }
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Desarchiva un pedido (lo devuelve a estado completado)
+    //  */
+    // public function unarchiveOrder(Order $order): Order
+    // {
+    //     if ($order->status !== 'archived') {
+    //         throw new Exception('Solo los pedidos archivados pueden ser desarchivados');
+    //     }
 
-        $order->update(['status' => 'completed']);
+    //     $order->update(['status' => 'completed']);
 
-        return $order->fresh();
-    }
+    //     return $order->fresh();
+    // }
 
     /**
      * Elimina un pedido (soft delete)
@@ -288,37 +291,38 @@ class OrderService
         return $order->delete();
     }
 
-    /**
-     * Elimina permanentemente un pedido (force delete)
-     * Solo se permite para pedidos que ya están en la papelera (soft deleted)
-     * Elimina también: items, dirección de envío y movimientos de stock asociados
-     */
-    public function forceDeleteOrder(Order $order): bool
-    {
-        DB::beginTransaction();
-        try {
-            // Eliminar items del pedido
-            $order->items()->delete();
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Elimina permanentemente un pedido (force delete)
+    //  * Solo se permite para pedidos que ya están en la papelera (soft deleted)
+    //  * Elimina también: items, dirección de envío y movimientos de stock asociados
+    //  */
+    // public function forceDeleteOrder(Order $order): bool
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         // Eliminar items del pedido
+    //         $order->items()->delete();
 
-            // Eliminar dirección de envío si existe
-            if ($order->shippingAddress) {
-                $order->shippingAddress()->delete();
-            }
+    //         // Eliminar dirección de envío si existe
+    //         if ($order->shippingAddress) {
+    //             $order->shippingAddress()->delete();
+    //         }
 
-            // Eliminar movimientos de stock asociados
-            $order->stockMovements()->delete();
+    //         // Eliminar movimientos de stock asociados
+    //         $order->stockMovements()->delete();
 
-            // Eliminar permanentemente el pedido
-            $order->forceDelete();
+    //         // Eliminar permanentemente el pedido
+    //         $order->forceDelete();
 
-            DB::commit();
-            return true;
+    //         DB::commit();
+    //         return true;
 
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     }
+    // }
 
     /**
      * Genera un número de pedido único

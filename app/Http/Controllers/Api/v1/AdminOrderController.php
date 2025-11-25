@@ -132,31 +132,32 @@ class AdminOrderController extends Controller
         }
     }
 
-    /**
-     * Marcar pedido como en progreso
-     * Aplica a pedidos online e in_store
-     * Ruta: routes/v1/admin_order.php
-     */
-    public function markInProgress(string $id): JsonResponse
-    {
-        try {
-            $order = Order::findOrFail($id);
-            $updatedOrder = $this->orderService->markAsInProgress($order);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Marcar pedido como en progreso
+    //  * Aplica a pedidos online e in_store
+    //  * Ruta: routes/v1/admin_order.php
+    //  */
+    // public function markInProgress(string $id): JsonResponse
+    // {
+    //     try {
+    //         $order = Order::findOrFail($id);
+    //         $updatedOrder = $this->orderService->markAsInProgress($order);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido marcado como en progreso',
-                'data' => $updatedOrder,
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pedido marcado como en progreso',
+    //             'data' => $updatedOrder,
+    //         ]);
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el pedido',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error al actualizar el pedido',
+    //             'error' => $e->getMessage(),
+    //         ], 422);
+    //     }
+    // }
 
     /**
      * Completar un pedido (confirma stock y envía email)
@@ -210,55 +211,57 @@ class AdminOrderController extends Controller
         }
     }
 
-    /**
-     * Archivar un pedido completado
-     * Ruta: routes/v1/admin_order.php
-     */
-    public function archive(string $id): JsonResponse
-    {
-        try {
-            $order = Order::findOrFail($id);
-            $updatedOrder = $this->orderService->archiveOrder($order);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Archivar un pedido completado
+    //  * Ruta: routes/v1/admin_order.php
+    //  */
+    // public function archive(string $id): JsonResponse
+    // {
+    //     try {
+    //         $order = Order::findOrFail($id);
+    //         $updatedOrder = $this->orderService->archiveOrder($order);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido archivado exitosamente',
-                'data' => $updatedOrder,
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pedido archivado exitosamente',
+    //             'data' => $updatedOrder,
+    //         ]);
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al archivar el pedido',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error al archivar el pedido',
+    //             'error' => $e->getMessage(),
+    //         ], 422);
+    //     }
+    // }
 
-    /**
-     * Desarchivar un pedido (devolver a completado)
-     * Ruta: routes/v1/admin_order.php
-     */
-    public function unarchive(string $id): JsonResponse
-    {
-        try {
-            $order = Order::findOrFail($id);
-            $updatedOrder = $this->orderService->unarchiveOrder($order);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Desarchivar un pedido (devolver a completado)
+    //  * Ruta: routes/v1/admin_order.php
+    //  */
+    // public function unarchive(string $id): JsonResponse
+    // {
+    //     try {
+    //         $order = Order::findOrFail($id);
+    //         $updatedOrder = $this->orderService->unarchiveOrder($order);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido desarchivado exitosamente',
-                'data' => $updatedOrder,
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pedido desarchivado exitosamente',
+    //             'data' => $updatedOrder,
+    //         ]);
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al desarchivar el pedido',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error al desarchivar el pedido',
+    //             'error' => $e->getMessage(),
+    //         ], 422);
+    //     }
+    // }
 
     /**
      * Eliminar un pedido (soft delete)
@@ -321,54 +324,56 @@ class AdminOrderController extends Controller
         }
     }
 
-    /**
-     * Restaurar un pedido eliminado
-     * Ruta: routes/v1/admin_order.php
-     */
-    public function restore(string $id): JsonResponse
-    {
-        try {
-            $order = Order::onlyTrashed()->findOrFail($id);
-            $order->restore();
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Restaurar un pedido eliminado
+    //  * Ruta: routes/v1/admin_order.php
+    //  */
+    // public function restore(string $id): JsonResponse
+    // {
+    //     try {
+    //         $order = Order::onlyTrashed()->findOrFail($id);
+    //         $order->restore();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido restaurado exitosamente',
-                'data' => $order->load(['items', 'shippingAddress', 'user']),
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pedido restaurado exitosamente',
+    //             'data' => $order->load(['items', 'shippingAddress', 'user']),
+    //         ]);
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al restaurar el pedido',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error al restaurar el pedido',
+    //             'error' => $e->getMessage(),
+    //         ], 422);
+    //     }
+    // }
 
-    /**
-     * Eliminar permanentemente un pedido (force delete)
-     * Solo para pedidos que ya están en la papelera (soft deleted)
-     * Elimina: pedido, items, dirección de envío y movimientos de stock
-     * Ruta: routes/v1/admin_order.php
-     */
-    public function forceDelete(string $id): JsonResponse
-    {
-        try {
-            $order = Order::onlyTrashed()->findOrFail($id);
-            $this->orderService->forceDeleteOrder($order);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // /**
+    //  * Eliminar permanentemente un pedido (force delete)
+    //  * Solo para pedidos que ya están en la papelera (soft deleted)
+    //  * Elimina: pedido, items, dirección de envío y movimientos de stock
+    //  * Ruta: routes/v1/admin_order.php
+    //  */
+    // public function forceDelete(string $id): JsonResponse
+    // {
+    //     try {
+    //         $order = Order::onlyTrashed()->findOrFail($id);
+    //         $this->orderService->forceDeleteOrder($order);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Pedido eliminado permanentemente',
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pedido eliminado permanentemente',
+    //         ]);
 
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar permanentemente el pedido',
-                'error' => $e->getMessage(),
-            ], 422);
-        }
-    }
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error al eliminar permanentemente el pedido',
+    //             'error' => $e->getMessage(),
+    //         ], 422);
+    //     }
+    // }
 }

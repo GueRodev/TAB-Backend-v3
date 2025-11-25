@@ -14,8 +14,9 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // Ver detalles de cualquier pedido
     Route::get('/admin/orders/{id}', [AdminOrderController::class, 'show']);
 
-    // Marcar pedido como en progreso
-    Route::patch('/admin/orders/{id}/mark-in-progress', [AdminOrderController::class, 'markInProgress']);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // // Marcar pedido como en progreso
+    // Route::patch('/admin/orders/{id}/mark-in-progress', [AdminOrderController::class, 'markInProgress']);
 
     // Completar pedido (confirma stock y envía email)
     Route::patch('/admin/orders/{id}/complete', [AdminOrderController::class, 'complete']);
@@ -23,11 +24,13 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // Cancelar pedido (libera stock)
     Route::patch('/admin/orders/{id}/cancel', [AdminOrderController::class, 'cancel']);
 
-    // Archivar pedido
-    Route::post('/admin/orders/{id}/archive', [AdminOrderController::class, 'archive']);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // // Archivar pedido
+    // Route::post('/admin/orders/{id}/archive', [AdminOrderController::class, 'archive']);
 
-    // Desarchivar pedido
-    Route::patch('/admin/orders/{id}/unarchive', [AdminOrderController::class, 'unarchive']);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // // Desarchivar pedido
+    // Route::patch('/admin/orders/{id}/unarchive', [AdminOrderController::class, 'unarchive']);
 
     // Eliminar pedido (soft delete)
     Route::delete('/admin/orders/{id}', [AdminOrderController::class, 'destroy']);
@@ -35,9 +38,11 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // Listar pedidos eliminados (soft deleted)
     Route::get('/admin/orders-trashed', [AdminOrderController::class, 'trashed']);
 
-    // Restaurar pedido eliminado
-    Route::patch('/admin/orders/{id}/restore', [AdminOrderController::class, 'restore']);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // // Restaurar pedido eliminado
+    // Route::patch('/admin/orders/{id}/restore', [AdminOrderController::class, 'restore']);
 
-    // Eliminar permanentemente un pedido (force delete - solo desde papelera)
-    Route::delete('/admin/orders/{id}/force', [AdminOrderController::class, 'forceDelete']);
+    // TEMPORALMENTE DESHABILITADO - No se está utilizando
+    // // Eliminar permanentemente un pedido (force delete - solo desde papelera)
+    // Route::delete('/admin/orders/{id}/force', [AdminOrderController::class, 'forceDelete']);
 });
