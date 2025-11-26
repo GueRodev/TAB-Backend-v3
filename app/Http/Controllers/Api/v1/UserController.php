@@ -452,6 +452,79 @@ class UserController extends Controller
     }
 
     /**
+     * Listar todos los usuarios con rol Cliente
+     *
+     * GET /api/v1/users/clients
+     *
+     * FILTRADO:
+     * - Solo muestra usuarios con rol "Cliente"
+     * - Incluye relación con direcciones y pedidos
+     * - Incluye conteo de órdenes
+     *
+     * @return JsonResponse Lista de clientes con sus datos
+     */
+    public function listClients(): JsonResponse
+    {
+        try {
+            // Obtener usuarios que tengan rol Cliente
+            $clients = User::whereHas('roles', function ($query) {
+                $query->where('name', 'Cliente');
+            })
+            ->with([
+                'roles:id,name',
+                'addresses' => function ($query) {
+                    $query->where('is_default', true)->limit(1);
+                },
+                'orders'
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+            // Formatear respuesta
+            $formattedClients = $clients->map(function ($client) {
+                $defaultAddress = $client->addresses->first();
+
+                return [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'email' => $client->email,
+                    'phone' => $client->phone,
+                    'role' => $client->getRoleNames()->first(),
+                    'created_at' => $client->created_at,
+                    'email_verified_at' => $client->email_verified_at,
+                    'orders_count' => $client->orders->count(),
+                    'default_address' => $defaultAddress ? [
+                        'id' => $defaultAddress->id,
+                        'province' => $defaultAddress->province,
+                        'canton' => $defaultAddress->canton,
+                        'district' => $defaultAddress->district,
+                        'address_details' => $defaultAddress->address_details,
+                        'label' => $defaultAddress->label,
+                    ] : null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'clients' => $formattedClients
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Error al listar clientes: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la lista de clientes',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
      * Verifica si el usuario es el último Super Admin del sistema
      *
      * LÓGICA:

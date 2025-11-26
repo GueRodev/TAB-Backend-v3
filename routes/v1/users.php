@@ -15,6 +15,10 @@ Route::middleware(['auth:sanctum', 'role:Super Admin'])->group(function () {
     // GET /api/v1/users
     Route::get('/users', [UserController::class, 'index']);
 
+    // Listar todos los usuarios con rol Cliente
+    // GET /api/v1/users/clients
+    Route::get('/users/clients', [UserController::class, 'listClients']);
+
     // Crear nuevo usuario Admin o Moderador
     // POST /api/v1/users
     // Body: { name, email, password, password_confirmation, role }
