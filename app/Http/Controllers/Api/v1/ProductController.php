@@ -69,7 +69,7 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::with(['category', 'stockMovements' => function($q) {
-            $q->latest()->limit(10);
+            $q->with('user:id,name,email')->latest()->limit(10);
         }])->findOrFail($id);
         
         return response()->json($product);
@@ -215,7 +215,7 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         $movements = $product->stockMovements()
-            ->with('user:id,name')
+            ->with('user:id,name,email')
             ->orderBy('created_at', 'desc')
             ->get();
 
