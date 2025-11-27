@@ -122,8 +122,8 @@ class User extends Authenticatable
     /**
      * Relación con notificaciones del usuario
      */
-   // public function notifications()
-   // {
-       // return $this->hasMany(Notification::class);
-   // }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

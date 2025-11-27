@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -41,6 +42,9 @@ class AuthController extends Controller
 
         // Asignar rol de Cliente automáticamente
         $user->assignRole('Cliente');
+
+        // Notificar a los administradores sobre el nuevo usuario
+        NotificationService::notifyNewUser($user);
 
         // Crear token de autenticación
         $token = $user->createToken('auth-token')->plainTextToken;

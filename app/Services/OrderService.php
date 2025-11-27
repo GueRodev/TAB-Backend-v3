@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\OrderShippingAddress;
 use App\Models\Product;
 use App\Services\StockReservationService;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderReceiptMail;
@@ -98,6 +99,9 @@ class OrderService
             );
 
             DB::commit();
+
+            // Notificar a los administradores sobre el nuevo pedido
+            NotificationService::notifyNewOrder($order);
 
             // Cargar relaciones para devolver el pedido completo
             return $order->load(['items', 'shippingAddress']);
@@ -200,6 +204,9 @@ class OrderService
 
             DB::commit();
 
+            // Notificar a los administradores sobre el pedido completado
+            NotificationService::notifyOrderCompleted($order);
+
             // Enviar email de comprobante si hay email
             if ($order->customer_email) {
                 try {
@@ -239,6 +246,9 @@ class OrderService
             $order->update(['status' => 'cancelled']);
 
             DB::commit();
+
+            // Notificar a los administradores sobre el pedido cancelado
+            NotificationService::notifyOrderCancelled($order);
 
             return $order->fresh();
 
@@ -288,7 +298,14 @@ class OrderService
             $this->stockService->releaseReservedStock($order->id, $userId);
         }
 
-        return $order->delete();
+        $deleted = $order->delete();
+
+        if ($deleted) {
+            // Notificar a los administradores sobre el pedido eliminado
+            NotificationService::notifyOrderDeleted($order);
+        }
+
+        return $deleted;
     }
 
     // TEMPORALMENTE DESHABILITADO - No se está utilizando

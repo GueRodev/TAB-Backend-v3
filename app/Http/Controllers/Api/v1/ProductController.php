@@ -8,6 +8,7 @@ use App\Http\Requests\v1\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Services\ProductImageService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -94,7 +95,10 @@ class ProductController extends Controller
         
         // Registrar stock inicial
         $this->createInitialStockMovement($product);
-        
+
+        // Notificar a los administradores sobre el nuevo producto
+        NotificationService::notifyNewProduct($product);
+
         return response()->json([
             'message' => 'Producto creado exitosamente',
             'product' => $product->fresh()
