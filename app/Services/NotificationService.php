@@ -48,51 +48,54 @@ class NotificationService
 
     /**
      * Notify about a completed order.
+     * COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
      */
-    public static function notifyOrderCompleted(Order $order)
-    {
-        self::notifyAllAdmins(
-            'order',
-            'Pedido completado',
-            "El pedido #{$order->id} ha sido marcado como completado",
-            [
-                'order_id' => $order->id,
-                'link' => '/admin/orders',
-            ]
-        );
-    }
+    // public static function notifyOrderCompleted(Order $order)
+    // {
+    //     self::notifyAllAdmins(
+    //         'order',
+    //         'Pedido completado',
+    //         "El pedido #{$order->id} ha sido marcado como completado",
+    //         [
+    //             'order_id' => $order->id,
+    //             'link' => '/admin/orders',
+    //         ]
+    //     );
+    // }
 
     /**
      * Notify about a cancelled order.
+     * COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
      */
-    public static function notifyOrderCancelled(Order $order)
-    {
-        self::notifyAllAdmins(
-            'order',
-            'Pedido cancelado',
-            "El pedido #{$order->id} ha sido cancelado",
-            [
-                'order_id' => $order->id,
-                'link' => '/admin/orders',
-            ]
-        );
-    }
+    // public static function notifyOrderCancelled(Order $order)
+    // {
+    //     self::notifyAllAdmins(
+    //         'order',
+    //         'Pedido cancelado',
+    //         "El pedido #{$order->id} ha sido cancelado",
+    //         [
+    //             'order_id' => $order->id,
+    //             'link' => '/admin/orders',
+    //         ]
+    //     );
+    // }
 
     /**
      * Notify about a deleted order.
+     * COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
      */
-    public static function notifyOrderDeleted(Order $order)
-    {
-        self::notifyAllAdmins(
-            'order',
-            'Pedido eliminado',
-            "El pedido #{$order->id} ha sido eliminado",
-            [
-                'order_id' => $order->id,
-                'link' => '/admin/orders-trashed',
-            ]
-        );
-    }
+    // public static function notifyOrderDeleted(Order $order)
+    // {
+    //     self::notifyAllAdmins(
+    //         'order',
+    //         'Pedido eliminado',
+    //         "El pedido #{$order->id} ha sido eliminado",
+    //         [
+    //             'order_id' => $order->id,
+    //             'link' => '/admin/orders-trashed',
+    //         ]
+    //     );
+    // }
 
     /**
      * Notify about low stock.
@@ -117,36 +120,38 @@ class NotificationService
 
     /**
      * Notify about a new user registration.
+     * COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
      */
-    public static function notifyNewUser(User $user)
-    {
-        self::notifyAllAdmins(
-            'user',
-            'Nuevo usuario registrado',
-            "{$user->name} se ha registrado como cliente",
-            [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'link' => '/admin/users',
-            ]
-        );
-    }
+    // public static function notifyNewUser(User $user)
+    // {
+    //     self::notifyAllAdmins(
+    //         'user',
+    //         'Nuevo usuario registrado',
+    //         "{$user->name} se ha registrado como cliente",
+    //         [
+    //             'user_id' => $user->id,
+    //             'email' => $user->email,
+    //             'link' => '/admin/users',
+    //         ]
+    //     );
+    // }
 
     /**
      * Notify about a new product.
+     * COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
      */
-    public static function notifyNewProduct(Product $product)
-    {
-        self::notifyAllAdmins(
-            'product',
-            'Nuevo producto creado',
-            "Se ha agregado el producto '{$product->name}' al inventario",
-            [
-                'product_id' => $product->id,
-                'link' => '/admin/products',
-            ]
-        );
-    }
+    // public static function notifyNewProduct(Product $product)
+    // {
+    //     self::notifyAllAdmins(
+    //         'product',
+    //         'Nuevo producto creado',
+    //         "Se ha agregado el producto '{$product->name}' al inventario",
+    //         [
+    //             'product_id' => $product->id,
+    //             'link' => '/admin/products',
+    //         ]
+    //     );
+    // }
 
     /**
      * Mark notification as read.

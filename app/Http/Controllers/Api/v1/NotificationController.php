@@ -71,10 +71,34 @@ class NotificationController extends Controller
     }
 
     /**
-     * Delete a specific notification.
+     * Delete a specific notification (soft delete).
+     * COMENTADO: No utilizamos soft delete por el momento
      * DELETE /api/v1/notifications/{id}
      */
-    public function destroy($id)
+    // public function destroy($id)
+    // {
+    //     $notification = Notification::where('id', $id)
+    //         ->where('user_id', auth()->id())
+    //         ->first();
+
+    //     if (!$notification) {
+    //         return response()->json([
+    //             'message' => 'Notificación no encontrada'
+    //         ], 404);
+    //     }
+
+    //     $notification->delete();
+
+    //     return response()->json([
+    //         'message' => 'Notificación eliminada exitosamente'
+    //     ]);
+    // }
+
+    /**
+     * Permanently delete a notification (force delete).
+     * DELETE /api/v1/notifications/{id}/force
+     */
+    public function forceDelete($id)
     {
         $notification = Notification::where('id', $id)
             ->where('user_id', auth()->id())
@@ -86,10 +110,10 @@ class NotificationController extends Controller
             ], 404);
         }
 
-        $notification->delete();
+        $notification->forceDelete();
 
         return response()->json([
-            'message' => 'Notificación eliminada exitosamente'
+            'message' => 'Notificación eliminada permanentemente'
         ]);
     }
 }

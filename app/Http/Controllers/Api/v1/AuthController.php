@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\NotificationService;
+// COMENTADO: No utilizamos notificaciones de nuevos usuarios por el momento
+// use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -44,7 +45,8 @@ class AuthController extends Controller
         $user->assignRole('Cliente');
 
         // Notificar a los administradores sobre el nuevo usuario
-        NotificationService::notifyNewUser($user);
+        // COMENTADO: Solo se notifica cuando se crea un pedido desde el carrito
+        // NotificationService::notifyNewUser($user);
 
         // Crear token de autenticación
         $token = $user->createToken('auth-token')->plainTextToken;

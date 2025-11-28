@@ -19,6 +19,10 @@ Route::middleware(['auth:sanctum', 'role:Super Admin|Moderador'])->group(functio
     // Marcar todas las notificaciones como leídas
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
-    // Eliminar una notificación específica
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+    // Eliminar una notificación específica (soft delete)
+    // COMENTADO: No utilizamos soft delete por el momento
+    // Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
+
+    // Eliminar permanentemente una notificación (force delete)
+    Route::delete('/notifications/{id}/force', [NotificationController::class, 'forceDelete']);
 });

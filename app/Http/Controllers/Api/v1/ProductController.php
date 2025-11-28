@@ -8,7 +8,8 @@ use App\Http\Requests\v1\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Services\ProductImageService;
-use App\Services\NotificationService;
+// COMENTADO: No utilizamos notificaciones de nuevos productos por el momento
+// use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -97,7 +98,8 @@ class ProductController extends Controller
         $this->createInitialStockMovement($product);
 
         // Notificar a los administradores sobre el nuevo producto
-        NotificationService::notifyNewProduct($product);
+        // COMENTADO: Solo se notifica cuando se crea un pedido desde el carrito
+        // NotificationService::notifyNewProduct($product);
 
         return response()->json([
             'message' => 'Producto creado exitosamente',

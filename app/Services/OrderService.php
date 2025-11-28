@@ -205,7 +205,8 @@ class OrderService
             DB::commit();
 
             // Notificar a los administradores sobre el pedido completado
-            NotificationService::notifyOrderCompleted($order);
+            // COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
+            // NotificationService::notifyOrderCompleted($order);
 
             // Enviar email de comprobante si hay email
             if ($order->customer_email) {
@@ -248,7 +249,8 @@ class OrderService
             DB::commit();
 
             // Notificar a los administradores sobre el pedido cancelado
-            NotificationService::notifyOrderCancelled($order);
+            // COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
+            // NotificationService::notifyOrderCancelled($order);
 
             return $order->fresh();
 
@@ -302,7 +304,8 @@ class OrderService
 
         if ($deleted) {
             // Notificar a los administradores sobre el pedido eliminado
-            NotificationService::notifyOrderDeleted($order);
+            // COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
+            // NotificationService::notifyOrderDeleted($order);
         }
 
         return $deleted;

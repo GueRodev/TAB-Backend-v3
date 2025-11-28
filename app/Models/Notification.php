@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+// COMENTADO: No utilizamos soft delete por el momento
+// use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Notification extends Model
 {
-    use HasFactory, SoftDeletes;
+    // COMENTADO: No utilizamos soft delete por el momento
+    // use HasFactory, SoftDeletes;
+    use HasFactory;
 
     /**
      * The attributes that are mass assignable.
@@ -34,7 +37,8 @@ class Notification extends Model
         'read_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
+        // COMENTADO: No utilizamos soft delete por el momento
+        // 'deleted_at' => 'datetime',
     ];
 
     /**
