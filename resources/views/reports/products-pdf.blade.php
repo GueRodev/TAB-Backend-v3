@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Arial', sans-serif;
             font-size: 11px;
             color: #333;
             line-height: 1.4;
@@ -179,7 +179,7 @@
             </div>
             <div class="summary-item">
                 <label>Sin Stock</label>
-                <value style="color: #dc2626;">{{ $data['summary']['out_of_stock_products'] }}</value>
+                <value style="color: #dc2626;">{{ $data['summary']['out_of_stock_count'] }}</value>
             </div>
             <div class="summary-item">
                 <label>Unidades en Stock</label>
@@ -187,10 +187,47 @@
             </div>
             <div class="summary-item">
                 <label>Valor Inventario</label>
-                <value class="positive">${{ number_format($data['inventory_valuation']['total_value_at_sale_price'], 2) }}</value>
+                <value class="positive">₡{{ number_format($data['inventory_valuation']['total_value_at_sale_price'], 2) }}</value>
             </div>
         </div>
     </div>
+
+    <!-- All Products -->
+    @if(isset($data['products']) && count($data['products']) > 0)
+    <div class="section-title">Todos los Productos</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>SKU</th>
+                <th>Categoría</th>
+                <th class="text-right">Stock Actual</th>
+                <th class="text-right">Precio Venta</th>
+                <th class="text-right">Valor Inventario</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($data['products'] as $product)
+            <tr>
+                <td>{{ $product['name'] }}</td>
+                <td>{{ $product['sku'] }}</td>
+                <td>{{ $product['category'] }}</td>
+                <td class="text-right">{{ $product['current_stock'] }}</td>
+                <td class="text-right">₡{{ number_format($product['sale_price'], 2) }}</td>
+                <td class="text-right">₡{{ number_format($product['inventory_value'], 2) }}</td>
+                <td>
+                    @if($product['status'] === 'active')
+                        <span style="color: #059669;">Activo</span>
+                    @else
+                        <span style="color: #6b7280;">Inactivo</span>
+                    @endif
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
 
     <!-- Out of Stock Products -->
     @if(isset($data['out_of_stock_products']) && count($data['out_of_stock_products']) > 0)
@@ -207,7 +244,7 @@
         <tbody>
             @foreach($data['out_of_stock_products'] as $product)
             <tr>
-                <td>{{ $product['name'] }}</td>
+                <td>{{ $product['product_name'] ?? $product['name'] }}</td>
                 <td>{{ $product['sku'] }}</td>
                 <td>{{ $product['category'] }}</td>
                 <td><span class="badge-danger">{{ $product['status'] }}</span></td>
@@ -239,7 +276,7 @@
                 <td>{{ $product['category'] }}</td>
                 <td class="text-right">{{ $product['current_stock'] }}</td>
                 <td class="text-right">{{ $product['total_sold'] }}</td>
-                <td class="text-right positive">${{ number_format($product['total_revenue'], 2) }}</td>
+                <td class="text-right positive">₡{{ number_format($product['total_revenue'], 2) }}</td>
             </tr>
             @endforeach
         </tbody>

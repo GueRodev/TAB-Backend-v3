@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Arial', sans-serif;
             font-size: 10px;
             color: #333;
             line-height: 1.4;
@@ -174,11 +174,11 @@
             </div>
             <div class="summary-item">
                 <label>Ingresos Totales</label>
-                <value class="positive">${{ number_format($data['summary']['total_revenue'], 2) }}</value>
+                <value class="positive">₡{{ number_format($data['summary']['total_revenue'], 2) }}</value>
             </div>
             <div class="summary-item">
                 <label>Valor Promedio Orden</label>
-                <value>${{ number_format($data['summary']['average_order_value'], 2) }}</value>
+                <value>₡{{ number_format($data['summary']['average_order_value'], 2) }}</value>
             </div>
         </div>
     </div>
@@ -209,9 +209,9 @@
                         <span class="badge">{{ $status['status'] }}</span>
                     @endif
                 </td>
-                <td class="text-right">{{ $status['count'] }}</td>
-                <td class="text-right">${{ number_format($status['revenue'], 2) }}</td>
-                <td class="text-right">{{ number_format($status['percentage'], 2) }}%</td>
+                <td class="text-right">{{ $status['orders'] ?? $status['count'] ?? 0 }}</td>
+                <td class="text-right">₡{{ number_format($status['total'] ?? $status['revenue'] ?? 0, 2) }}</td>
+                <td class="text-right">{{ number_format($status['percentage'] ?? 0, 2) }}%</td>
             </tr>
             @endforeach
         </tbody>
@@ -233,8 +233,31 @@
             @foreach($data['order_type_breakdown'] as $type)
             <tr>
                 <td>{{ $type['order_type'] }}</td>
-                <td class="text-right">{{ $type['count'] }}</td>
-                <td class="text-right positive">${{ number_format($type['revenue'], 2) }}</td>
+                <td class="text-right">{{ $type['orders'] ?? $type['count'] ?? 0 }}</td>
+                <td class="text-right positive">₡{{ number_format($type['total'] ?? $type['revenue'] ?? 0, 2) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+
+    <!-- Payment Method Breakdown -->
+    @if(isset($data['payment_method_breakdown']) && count($data['payment_method_breakdown']) > 0)
+    <div class="section-title">Desglose por Método de Pago</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Método de Pago</th>
+                <th class="text-right">Cantidad</th>
+                <th class="text-right">Ingresos Totales</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($data['payment_method_breakdown'] as $method)
+            <tr>
+                <td>{{ $method['payment_method'] }}</td>
+                <td class="text-right">{{ $method['orders'] ?? $method['count'] ?? 0 }}</td>
+                <td class="text-right positive">₡{{ number_format($method['total'] ?? $method['revenue'] ?? 0, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -272,7 +295,7 @@
                     @endif
                 </td>
                 <td>{{ $order['order_type'] }}</td>
-                <td class="text-right">${{ number_format($order['total'], 2) }}</td>
+                <td class="text-right">₡{{ number_format($order['total'], 2) }}</td>
                 <td>{{ \Carbon\Carbon::parse($order['created_at'])->format('d/m/Y') }}</td>
             </tr>
             @endforeach

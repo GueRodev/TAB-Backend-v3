@@ -39,6 +39,22 @@ class ProductsReportService
         // Calcular métricas de inventario
         $inventorySummary = $this->calculateInventorySummary($products);
 
+        // Formatear todos los productos para el tab "Todos"
+        $formattedProducts = $products->map(function ($product) {
+            return [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'category' => $product->category->name ?? 'Sin categoría',
+                'subcategory' => $product->subcategory ?? null,
+                'current_stock' => $product->stock,
+                'sale_price' => (float) $product->price,
+                'cost_price' => (float) ($product->cost_price ?? 0),
+                'inventory_value' => (float) ($product->price * $product->stock),
+                'status' => $product->status,
+            ];
+        })->toArray();
+
         // Obtener productos con stock bajo
         $lowStockProducts = $this->getLowStockProducts();
 
@@ -56,6 +72,7 @@ class ProductsReportService
 
         return [
             'summary' => $inventorySummary,
+            'products' => $formattedProducts,
             'inventory_valuation' => $inventoryValuation,
             'low_stock_products' => $lowStockProducts,
             'out_of_stock_products' => $outOfStockProducts,
@@ -94,7 +111,7 @@ class ProductsReportService
                 'products.stock_min',
                 'categories.name as category_name',
                 DB::raw('SUM(order_items.quantity) as quantity_sold'),
-                DB::raw('SUM(order_items.price * order_items.quantity) as revenue'),
+                DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as revenue'),
                 DB::raw('COUNT(DISTINCT order_items.order_id) as orders_count'),
             ])
             ->groupBy(
@@ -164,20 +181,32 @@ class ProductsReportService
         $totalProducts = $products->count();
         $activeProducts = $products->where('status', 'active')->count();
         $inactiveProducts = $products->where('status', 'inactive')->count();
-        $outOfStockProducts = $products->where('stock', 0)->count();
+        $outOfStockCount = $products->where('stock', 0)->count();
+        $inStockCount = $products->where('stock', '>', 0)->count();
         $lowStockProducts = $products->filter(function ($product) {
             return $product->stock > 0 && $product->stock <= $product->stock_min;
         })->count();
 
         $totalStockUnits = $products->sum('stock');
 
+        // Calculate total inventory value (at sale price)
+        $totalInventoryValue = $products->sum(function ($product) {
+            return $product->price * $product->stock;
+        });
+
+        // Calculate average product value
+        $averageProductValue = $totalProducts > 0 ? $totalInventoryValue / $totalProducts : 0;
+
         return [
             'total_products' => $totalProducts,
             'active_products' => $activeProducts,
             'inactive_products' => $inactiveProducts,
-            'out_of_stock_products' => $outOfStockProducts,
+            'out_of_stock_count' => $outOfStockCount,
+            'in_stock_count' => $inStockCount,
             'low_stock_products' => $lowStockProducts,
             'total_stock_units' => $totalStockUnits,
+            'total_inventory_value' => (float) $totalInventoryValue,
+            'average_product_value' => (float) $averageProductValue,
         ];
     }
 
@@ -253,6 +282,7 @@ class ProductsReportService
             return [
                 'product_id' => $product->id,
                 'name' => $product->name,
+                'product_name' => $product->name,
                 'sku' => $product->sku,
                 'category' => $product->category->name ?? 'Sin categoría',
                 'status' => $product->status,
@@ -281,7 +311,7 @@ class ProductsReportService
                 'products.stock',
                 'categories.name as category_name',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
-                DB::raw('SUM(order_items.price * order_items.quantity) as total_revenue'),
+                DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as total_revenue'),
             ])
             ->groupBy('products.id', 'products.name', 'products.sku', 'products.stock', 'categories.name')
             ->orderByDesc('total_sold')
@@ -322,6 +352,7 @@ class ProductsReportService
             ->select([
                 'order_items.product_id',
                 DB::raw('SUM(order_items.quantity) as total_sold'),
+                DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as total_revenue'),
             ])
             ->groupBy('order_items.product_id')
             ->get()
@@ -329,7 +360,9 @@ class ProductsReportService
 
         // Combinar datos: productos con ventas bajas o sin ventas
         $slowMoving = $allProducts->map(function ($product) use ($soldProducts) {
-            $totalSold = $soldProducts->get($product->id)?->total_sold ?? 0;
+            $soldData = $soldProducts->get($product->id);
+            $totalSold = $soldData?->total_sold ?? 0;
+            $totalRevenue = $soldData?->total_revenue ?? 0;
 
             return [
                 'product_id' => $product->id,
@@ -338,6 +371,7 @@ class ProductsReportService
                 'category' => $product->category->name ?? 'Sin categoría',
                 'current_stock' => $product->stock,
                 'total_sold' => (int) $totalSold,
+                'total_revenue' => (float) $totalRevenue,
             ];
         })
         ->sortBy('total_sold')

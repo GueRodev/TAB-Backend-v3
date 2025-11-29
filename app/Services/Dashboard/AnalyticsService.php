@@ -211,7 +211,7 @@ class AnalyticsService
         foreach ($orders as $order) {
             foreach ($order->items as $item) {
                 if ($item->product && $item->product->cost_price) {
-                    $profit = ($item->price - $item->product->cost_price) * $item->quantity;
+                    $profit = ($item->price_at_purchase - $item->product->cost_price) * $item->quantity;
                     $totalProfit += $profit;
                 }
             }

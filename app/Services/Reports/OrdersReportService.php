@@ -222,11 +222,20 @@ class OrdersReportService
      */
     private function getOrderTypeBreakdown($orders): array
     {
-        return $orders->groupBy('order_type')->map(function ($typeOrders, $type) {
+        $totalOrders = $orders->count();
+
+        return $orders->groupBy('order_type')->map(function ($typeOrders, $type) use ($totalOrders) {
+            $count = $typeOrders->count();
+            $total = $typeOrders->sum('total');
+            $average = $count > 0 ? $total / $count : 0;
+            $percentage = $totalOrders > 0 ? ($count / $totalOrders) * 100 : 0;
+
             return [
                 'order_type' => $type,
-                'count' => $typeOrders->count(),
-                'revenue' => (float) $typeOrders->sum('total'),
+                'total' => (float) $total,
+                'orders' => $count,
+                'average' => (float) $average,
+                'percentage' => (float) $percentage,
             ];
         })->values()->toArray();
     }
@@ -239,11 +248,20 @@ class OrdersReportService
      */
     private function getPaymentMethodBreakdown($orders): array
     {
-        return $orders->groupBy('payment_method')->map(function ($methodOrders, $method) {
+        $totalOrders = $orders->count();
+
+        return $orders->groupBy('payment_method')->map(function ($methodOrders, $method) use ($totalOrders) {
+            $count = $methodOrders->count();
+            $total = $methodOrders->sum('total');
+            $average = $count > 0 ? $total / $count : 0;
+            $percentage = $totalOrders > 0 ? ($count / $totalOrders) * 100 : 0;
+
             return [
                 'payment_method' => $method ?? 'No especificado',
-                'count' => $methodOrders->count(),
-                'revenue' => (float) $methodOrders->sum('total'),
+                'total' => (float) $total,
+                'orders' => $count,
+                'average' => (float) $average,
+                'percentage' => (float) $percentage,
             ];
         })->values()->toArray();
     }

@@ -123,7 +123,7 @@ class SalesReportService
 
                 if ($item->product && $item->product->cost_price) {
                     $itemCost = $item->product->cost_price * $item->quantity;
-                    $itemProfit = ($item->price - $item->product->cost_price) * $item->quantity;
+                    $itemProfit = ($item->price_at_purchase - $item->product->cost_price) * $item->quantity;
 
                     $totalCost += $itemCost;
                     $totalProfit += $itemProfit;
@@ -167,7 +167,7 @@ class SalesReportService
                 'products.sku',
                 'products.cost_price',
                 DB::raw('SUM(order_items.quantity) as quantity_sold'),
-                DB::raw('SUM(order_items.price * order_items.quantity) as revenue'),
+                DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as revenue'),
             ])
             ->groupBy('products.id', 'products.name', 'products.sku', 'products.cost_price')
             ->orderByDesc('revenue')

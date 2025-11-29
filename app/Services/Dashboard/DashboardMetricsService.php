@@ -144,7 +144,7 @@ class DashboardMetricsService
                     'products.sku',
                     'products.cost_price',
                     DB::raw('SUM(order_items.quantity) as quantity_sold'),
-                    DB::raw('SUM(order_items.price * order_items.quantity) as revenue'),
+                    DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as revenue'),
                 ])
                 ->groupBy('products.id', 'products.name', 'products.sku', 'products.cost_price')
                 ->orderByDesc('revenue')
@@ -358,7 +358,7 @@ class DashboardMetricsService
         foreach ($orders as $order) {
             foreach ($order->items as $item) {
                 if ($item->product && $item->product->cost_price) {
-                    $profit = ($item->price - $item->product->cost_price) * $item->quantity;
+                    $profit = ($item->price_at_purchase - $item->product->cost_price) * $item->quantity;
                     $totalProfit += $profit;
                 }
             }

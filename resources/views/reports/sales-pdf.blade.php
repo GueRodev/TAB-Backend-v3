@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Arial', sans-serif;
             font-size: 11px;
             color: #333;
             line-height: 1.4;
@@ -152,11 +152,11 @@
         <div class="summary-grid">
             <div class="summary-item">
                 <label>Ingresos Totales</label>
-                <value class="positive">${{ number_format($data['summary']['total_revenue'], 2) }}</value>
+                <value class="positive">₡{{ number_format($data['summary']['total_revenue'], 2) }}</value>
             </div>
             <div class="summary-item">
                 <label>Ganancia Total</label>
-                <value class="positive">${{ number_format($data['summary']['total_profit'], 2) }}</value>
+                <value class="positive">₡{{ number_format($data['summary']['total_profit'], 2) }}</value>
             </div>
             <div class="summary-item">
                 <label>Total Órdenes</label>
@@ -172,7 +172,7 @@
             </div>
             <div class="summary-item">
                 <label>Valor Promedio Orden</label>
-                <value>${{ number_format($data['summary']['average_order_value'], 2) }}</value>
+                <value>₡{{ number_format($data['summary']['average_order_value'], 2) }}</value>
             </div>
         </div>
     </div>
@@ -196,8 +196,8 @@
                 <td>{{ $product['product_name'] }}</td>
                 <td>{{ $product['sku'] }}</td>
                 <td class="text-right">{{ $product['quantity_sold'] }}</td>
-                <td class="text-right">${{ number_format($product['revenue'], 2) }}</td>
-                <td class="text-right positive">${{ number_format($product['profit'], 2) }}</td>
+                <td class="text-right">₡{{ number_format($product['revenue'], 2) }}</td>
+                <td class="text-right positive">₡{{ number_format($product['profit'], 2) }}</td>
                 <td class="text-right">{{ number_format($product['profit_margin'], 2) }}%</td>
             </tr>
             @empty
@@ -225,8 +225,8 @@
             <tr>
                 <td>{{ $method['payment_method'] }}</td>
                 <td class="text-right">{{ $method['orders_count'] }}</td>
-                <td class="text-right">${{ number_format($method['total_revenue'], 2) }}</td>
-                <td class="text-right">${{ number_format($method['average_order_value'], 2) }}</td>
+                <td class="text-right">₡{{ number_format($method['total_revenue'], 2) }}</td>
+                <td class="text-right">₡{{ number_format($method['average_order_value'], 2) }}</td>
             </tr>
             @endforeach
         </tbody>
