@@ -27,6 +27,12 @@ class Order extends Model
         'shipping_cost',
         'total',
         'notes',
+        // Campos de auditoría
+        'completed_by',
+        'completed_at',
+        'cancelled_by',
+        'cancelled_at',
+        'deleted_by',
     ];
 
     protected $casts = [
@@ -36,6 +42,9 @@ class Order extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        // Casts de auditoría
+        'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     // Relaciones
@@ -57,6 +66,33 @@ class Order extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Relación con el usuario que completó la orden
+     * Uso: $order->completedBy->name
+     */
+    public function completedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    /**
+     * Relación con el usuario que canceló la orden
+     * Uso: $order->cancelledBy->name
+     */
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
+
+    /**
+     * Relación con el usuario que eliminó la orden (soft delete)
+     * Uso: $order->deletedBy->name
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
     // Scopes

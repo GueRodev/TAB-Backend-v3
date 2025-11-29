@@ -48,6 +48,15 @@ Route::prefix('v1')->group(function () {
     // MÓDULO DE NOTIFICACIONES - ADMIN
     require base_path('routes/v1/notifications.php');
 
+    // MÓDULO DE DASHBOARD - ADMIN
+    require base_path('routes/v1/dashboard.php');
+
+    // MÓDULO DE ANALYTICS - ADMIN
+    require base_path('routes/v1/analytics.php');
+
+    // MÓDULO DE REPORTS - ADMIN
+    require base_path('routes/v1/reports.php');
+
    //Ruta de ejemplo para verificar si el usuario está autenticado
     Route::middleware('auth:sanctum')->group(function () {
         // Ruta de ejemplo (la que venía por defecto)

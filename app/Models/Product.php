@@ -16,7 +16,9 @@ class Product extends Model
         'brand',
         'description',
         'price',
+        'cost_price',
         'stock',
+        'stock_min',
         'sku',
         'image_url',
         'category_id',
@@ -27,8 +29,10 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'is_featured' => 'boolean',
         'stock' => 'integer',
+        'stock_min' => 'integer',
     ];
 
     // Relaciones
@@ -82,9 +86,18 @@ class Product extends Model
         });
     }
 
-    // Accessor
-    public function getPriceFormattedAttribute()
-    {
-        return '₡' . number_format($this->price, 2);
-    }
+    // Scopes adicionales
+
+    /**
+     * Scope para obtener productos con stock bajo
+     * Filtra productos donde: stock <= stock_min Y stock > 0
+     * Uso: Product::lowStock()->get()
+     *
+     * Nota: Comentado por ahora. Se agregará cuando se implemente
+     * el módulo de alertas de stock o reporte de inventario.
+     */
+    // public function scopeLowStock($query)
+    // {
+    //     return $query->whereRaw('stock <= stock_min')->where('stock', '>', 0);
+    // }
 }
