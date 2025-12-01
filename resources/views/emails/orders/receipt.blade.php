@@ -22,7 +22,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1A3D5C 0%, #2C5F7F 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -36,13 +36,13 @@
         }
         .order-info {
             background-color: #f8f9fa;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #FFA500;
             padding: 15px;
             margin-bottom: 20px;
         }
         .order-info h2 {
             margin-top: 0;
-            color: #667eea;
+            color: #1A3D5C;
             font-size: 20px;
         }
         .info-row {
@@ -67,7 +67,7 @@
             margin: 20px 0;
         }
         .items-table th {
-            background-color: #667eea;
+            background-color: #1A3D5C;
             color: white;
             padding: 12px;
             text-align: left;
@@ -94,10 +94,10 @@
         .total-row.grand-total {
             font-weight: bold;
             font-size: 20px;
-            color: #667eea;
+            color: #1A3D5C;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 2px solid #667eea;
+            border-top: 2px solid #FFA500;
         }
         .shipping-info {
             background-color: #fff3cd;
@@ -210,7 +210,7 @@
             @endif
 
             <!-- Items Table -->
-            <h3 style="color: #667eea;">Detalles del Pedido</h3>
+            <h3 style="color: #1A3D5C;">Detalles del Pedido</h3>
             <table class="items-table">
                 <thead>
                     <tr>
@@ -268,7 +268,7 @@
             <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; text-align: center;">
                 <p style="margin: 0 0 10px 0; font-weight: 600;">¿Tienes alguna pregunta?</p>
                 <p style="margin: 0; color: #6c757d;">
-                    Contáctanos: <a href="mailto:info@toysandbricks.com" style="color: #667eea;">info@toysandbricks.com</a>
+                    Contáctanos: <a href="mailto:info@toysandbricks.store" style="color: #FFA500;">info@toysandbricks.store</a>
                 </p>
             </div>
         </div>
