@@ -121,9 +121,10 @@ class SalesReportService
             foreach ($order->items as $item) {
                 $totalItemsSold += $item->quantity;
 
-                if ($item->product && $item->product->cost_price) {
-                    $itemCost = $item->product->cost_price * $item->quantity;
-                    $itemProfit = ($item->price_at_purchase - $item->product->cost_price) * $item->quantity;
+                // Usar el snapshot guardado en el item en lugar del producto actual
+                if ($item->cost_price_at_purchase) {
+                    $itemCost = $item->cost_price_at_purchase * $item->quantity;
+                    $itemProfit = ($item->price_at_purchase - $item->cost_price_at_purchase) * $item->quantity;
 
                     $totalCost += $itemCost;
                     $totalProfit += $itemProfit;
@@ -156,42 +157,39 @@ class SalesReportService
      */
     private function getTopProductsInPeriod(Carbon $start, Carbon $end, int $limit): array
     {
+        // Usar LEFT JOIN porque el producto podría haber sido eliminado
         $topProducts = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
             ->where('orders.status', 'completed')
             ->whereBetween('orders.created_at', [$start, $end])
             ->select([
-                'products.id as product_id',
-                'products.name as product_name',
-                'products.sku',
-                'products.cost_price',
+                'order_items.product_id',
+                'order_items.product_name',
+                'order_items.product_sku as sku',
                 DB::raw('SUM(order_items.quantity) as quantity_sold'),
                 DB::raw('SUM(order_items.price_at_purchase * order_items.quantity) as revenue'),
+                DB::raw('SUM(COALESCE(order_items.cost_price_at_purchase, 0) * order_items.quantity) as total_cost'),
             ])
-            ->groupBy('products.id', 'products.name', 'products.sku', 'products.cost_price')
+            ->groupBy('order_items.product_id', 'order_items.product_name', 'order_items.product_sku')
             ->orderByDesc('revenue')
             ->limit($limit)
             ->get();
 
         return $topProducts->map(function ($product) {
-            $cost = 0;
-            $profit = 0;
-
-            if ($product->cost_price) {
-                $cost = $product->cost_price * $product->quantity_sold;
-                $profit = $product->revenue - $cost;
-            }
+            $cost = (float) $product->total_cost;
+            $revenue = (float) $product->revenue;
+            $profit = $revenue - $cost;
 
             return [
                 'product_id' => $product->product_id,
                 'product_name' => $product->product_name,
                 'sku' => $product->sku,
                 'quantity_sold' => (int) $product->quantity_sold,
-                'revenue' => (float) $product->revenue,
-                'cost' => (float) $cost,
-                'profit' => (float) $profit,
-                'profit_margin' => $product->revenue > 0 ? ($profit / $product->revenue) * 100 : 0,
+                'revenue' => $revenue,
+                'cost' => $cost,
+                'profit' => $profit,
+                'profit_margin' => $revenue > 0 ? ($profit / $revenue) * 100 : 0,
             ];
         })->toArray();
     }

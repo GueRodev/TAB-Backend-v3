@@ -402,6 +402,7 @@ class OrderService
                 'product_image_url' => $product->image_url,
                 'quantity' => $item['quantity'],
                 'price_at_purchase' => $product->price,
+                'cost_price_at_purchase' => $product->cost_price,
                 'subtotal' => $product->price * $item['quantity'],
             ]);
         }

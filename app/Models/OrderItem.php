@@ -19,12 +19,14 @@ class OrderItem extends Model
         'product_image_url',
         'quantity',
         'price_at_purchase',
+        'cost_price_at_purchase',
         'subtotal',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'price_at_purchase' => 'decimal:2',
+        'cost_price_at_purchase' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
 

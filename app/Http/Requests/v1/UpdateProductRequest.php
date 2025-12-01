@@ -38,6 +38,7 @@ class UpdateProductRequest extends FormRequest
             'brand' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:2000',
             'price' => 'required|numeric|min:0|max:99999999.99',
+            'cost_price' => 'nullable|numeric|min:0|max:99999999.99',
             'stock' => 'required|integer|min:0',
             'sku' => "nullable|string|unique:products,sku,{$productId}|max:50",
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',

@@ -12,7 +12,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "league/flysystem-aws-s3-v3": "^3.30",
-        "maatwebsite/excel": "^1.1",
+        "phpoffice/phpspreadsheet": "^5.3",
+        "psr/simple-cache": "^2.0|^3.0",
         "spatie/laravel-permission": "^6.21"
     },
     "require-dev": {

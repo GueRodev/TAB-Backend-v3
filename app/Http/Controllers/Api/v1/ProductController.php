@@ -29,7 +29,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::with('category')->withCount('stockMovements');
-        
+
         // Aplicar filtros con when()
         $query->when($request->category_id, fn($q, $value) => $q->byCategory($value))
               ->when($request->brand, fn($q, $value) => $q->byBrand($value))
@@ -39,28 +39,32 @@ class ProductController extends Controller
               ->when($request->in_stock, fn($q) => $q->inStock())
               ->when($request->min_price, fn($q, $value) => $q->where('price', '>=', $value))
               ->when($request->max_price, fn($q, $value) => $q->where('price', '<=', $value));
-        
+
         // Ordenamiento con whitelist
         // Prevenir ataques de inyeccion de codigo SQL
              $allowedSorts = ['created_at', 'name', 'price', 'stock', 'brand'];
              $sort = in_array($request->sort, $allowedSorts) ? $request->sort : 'created_at';
              $order = in_array($request->order, ['asc', 'desc']) ? $request->order : 'desc';
              $query->orderBy($sort, $order);
-             return $query->paginate(15);
+
+             // Permitir configurar per_page desde el frontend (default: 15, max: 1000)
+             $perPage = min((int) $request->get('per_page', 15), 1000);
+             return $query->paginate($perPage);
     }
     
     /**
      * Mostrar productos destacados.
      * GET /api/v1/products/featured
+     * Retorna TODOS los productos destacados sin límite
      */
     public function featured()
     {
         $products = Product::with('category')
             ->featured()
             ->active()
-            ->limit(12)
+            ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return response()->json($products);
     }
     
