@@ -56,6 +56,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend Application URL
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used to generate links to the frontend application,
+    | such as password reset URLs that will be sent via email.
+    |
+    | Development: http://localhost:5173
+    | Production: Configure FRONTEND_URL in .env with your production URL
+    |             Example: https://toysandbricks.com
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

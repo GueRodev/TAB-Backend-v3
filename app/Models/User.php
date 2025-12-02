@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Mail\PasswordResetMail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -125,5 +127,22 @@ class User extends Authenticatable
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+
+    // ========================================
+    // PASSWORD RESET
+    // ========================================
+
+    /**
+     * Enviar notificación de restablecimiento de contraseña personalizada
+     *
+     * @param string $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        Mail::to($this->email)->send(
+            new PasswordResetMail($token, $this->email, $this->name)
+        );
     }
 }
