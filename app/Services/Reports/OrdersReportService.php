@@ -28,14 +28,42 @@ class OrdersReportService
         $end = $endDate->copy()->endOfDay();
 
         // Query base
-        $query = Order::with(['user', 'items.product', 'completedBy', 'cancelledBy'])
-            ->whereBetween('created_at', [$start, $end]);
+        $query = Order::with(['user', 'items.product', 'completedBy', 'cancelledBy']);
 
-        // Aplicar filtros
+        // Filtro de fecha: Si hay filtro de estado específico, usar la fecha correspondiente
+        // Usa created_at como fallback para pedidos antiguos sin auditoría
         if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
+            if ($filters['status'] === 'completed') {
+                // Para completados, filtrar por completed_at (con fallback a created_at)
+                $query->where('status', 'completed')
+                      ->where(function($q) use ($start, $end) {
+                          $q->whereBetween('completed_at', [$start, $end])
+                            ->orWhere(function($q2) use ($start, $end) {
+                                $q2->whereNull('completed_at')
+                                   ->whereBetween('created_at', [$start, $end]);
+                            });
+                      });
+            } elseif ($filters['status'] === 'cancelled') {
+                // Para cancelados, filtrar por cancelled_at (con fallback a created_at)
+                $query->where('status', 'cancelled')
+                      ->where(function($q) use ($start, $end) {
+                          $q->whereBetween('cancelled_at', [$start, $end])
+                            ->orWhere(function($q2) use ($start, $end) {
+                                $q2->whereNull('cancelled_at')
+                                   ->whereBetween('created_at', [$start, $end]);
+                            });
+                      });
+            } else {
+                // Para otros estados (pending, etc.), usar created_at
+                $query->where('status', $filters['status'])
+                      ->whereBetween('created_at', [$start, $end]);
+            }
+        } else {
+            // Sin filtro de estado: mostrar todos los pedidos creados en el rango
+            $query->whereBetween('created_at', [$start, $end]);
         }
 
+        // Aplicar otros filtros
         if (isset($filters['order_type'])) {
             $query->where('order_type', $filters['order_type']);
         }
@@ -275,6 +303,11 @@ class OrdersReportService
     private function formatOrdersData($orders): array
     {
         return $orders->map(function ($order) {
+            // Formatear productos: "Producto 1 (x2), Producto 2 (x1)"
+            $productsText = $order->items->map(function ($item) {
+                return $item->product_name . ' (x' . $item->quantity . ')';
+            })->join(', ');
+
             return [
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
@@ -287,9 +320,11 @@ class OrdersReportService
                 'shipping_cost' => (float) $order->shipping_cost,
                 'total' => (float) $order->total,
                 'items_count' => $order->items->count(),
+                'products' => $productsText, // Productos formateados
                 'created_at' => $order->created_at->toISOString(),
                 'completed_at' => $order->completed_at?->toISOString(),
-                'completed_by' => $order->completedBy?->name,
+                'completed_by' => $order->completedBy?->name ?? ($order->completed_by ? "Usuario #{$order->completed_by}" : null),
+                'cancelled_by' => $order->cancelledBy?->name ?? ($order->cancelled_by ? "Usuario #{$order->cancelled_by}" : null),
             ];
         })->toArray();
     }

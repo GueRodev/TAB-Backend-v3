@@ -266,7 +266,7 @@
 
     <!-- Orders Details -->
     @if(isset($data['orders']) && count($data['orders']) > 0)
-    <div class="section-title">Detalle de Órdenes</div>
+    <div class="section-title">Detalle de Órdenes ({{ count($data['orders']) }} pedidos)</div>
     <table>
         <thead>
             <tr>
@@ -276,27 +276,51 @@
                 <th>Tipo</th>
                 <th class="text-right">Total</th>
                 <th>Fecha</th>
+                <th>Completado Por</th>
+                <th>Cancelado Por</th>
             </tr>
         </thead>
         <tbody>
             @foreach($data['orders'] as $order)
+            <!-- Fila principal del pedido -->
             <tr>
                 <td>{{ $order['order_number'] }}</td>
                 <td>{{ $order['customer_name'] }}</td>
                 <td>
                     @if($order['status'] == 'completed')
-                        <span class="badge badge-completed">{{ $order['status'] }}</span>
+                        <span class="badge badge-completed">completado</span>
                     @elseif($order['status'] == 'pending')
-                        <span class="badge badge-pending">{{ $order['status'] }}</span>
+                        <span class="badge badge-pending">pendiente</span>
                     @elseif($order['status'] == 'cancelled')
-                        <span class="badge badge-cancelled">{{ $order['status'] }}</span>
+                        <span class="badge badge-cancelled">cancelado</span>
                     @else
                         <span class="badge">{{ $order['status'] }}</span>
                     @endif
                 </td>
-                <td>{{ $order['order_type'] }}</td>
+                <td>{{ $order['order_type'] == 'online' ? 'Online' : 'Tienda' }}</td>
                 <td class="text-right">₡{{ number_format($order['total'], 2) }}</td>
                 <td>{{ \Carbon\Carbon::parse($order['created_at'])->format('d/m/Y') }}</td>
+                <td style="font-size: 8px;">{{ $order['completed_by'] ?? '-' }}</td>
+                <td style="font-size: 8px;">{{ $order['cancelled_by'] ?? '-' }}</td>
+            </tr>
+            <!-- Fila expandida con productos y método de pago -->
+            <tr style="background-color: #f9fafb;">
+                <td colspan="8" style="padding: 4px 4px 8px 20px; font-size: 8px; color: #6b7280; border-bottom: 2px solid #e5e7eb;">
+                    <strong>Productos ({{ $order['items_count'] }}):</strong> {{ $order['products'] ?? 'Sin productos' }}
+                    <br>
+                    <strong>Método de Pago:</strong>
+                    @if($order['payment_method'] == 'cash')
+                        Efectivo
+                    @elseif($order['payment_method'] == 'card')
+                        Tarjeta
+                    @elseif($order['payment_method'] == 'transfer')
+                        Transferencia
+                    @elseif($order['payment_method'] == 'sinpe')
+                        SINPE Móvil
+                    @else
+                        {{ ucfirst($order['payment_method'] ?? 'No especificado') }}
+                    @endif
+                </td>
             </tr>
             @endforeach
         </tbody>

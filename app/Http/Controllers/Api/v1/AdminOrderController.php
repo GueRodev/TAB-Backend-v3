@@ -37,7 +37,7 @@ class AdminOrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Order::with(['items', 'shippingAddress', 'user'])
+            $query = Order::with(['items', 'shippingAddress', 'user', 'completedBy', 'cancelledBy', 'deletedBy'])
                 // Filtro por estado del pedido
                 ->when($request->filled('status'), function ($q) use ($request) {
                     $q->where('status', $request->status);
@@ -115,7 +115,7 @@ class AdminOrderController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $order = Order::with(['items', 'shippingAddress', 'user', 'stockMovements'])
+            $order = Order::with(['items', 'shippingAddress', 'user', 'stockMovements', 'completedBy', 'cancelledBy', 'deletedBy'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -295,7 +295,7 @@ class AdminOrderController extends Controller
     {
         try {
             $query = Order::onlyTrashed()
-                ->with(['items', 'shippingAddress', 'user'])
+                ->with(['items', 'shippingAddress', 'user', 'completedBy', 'cancelledBy', 'deletedBy'])
                 ->when($request->filled('order_type'), function ($q) use ($request) {
                     $q->where('order_type', $request->order_type);
                 })

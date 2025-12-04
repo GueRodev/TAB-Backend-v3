@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\OrderReceiptMail;
+use App\Mail\OrderCancelledMail;
 use Exception;
 
 class OrderService
@@ -199,8 +200,12 @@ class OrderService
             // Confirmar venta (convierte reservas en ventas y descuenta stock real)
             $this->stockService->confirmSale($order->id, $userId);
 
-            // Actualizar estado del pedido
-            $order->update(['status' => 'completed']);
+            // Actualizar estado del pedido con auditoría
+            $order->update([
+                'status' => 'completed',
+                'completed_by' => $userId,
+                'completed_at' => now(),
+            ]);
 
             DB::commit();
 
@@ -230,7 +235,7 @@ class OrderService
     }
 
     /**
-     * Cancela un pedido (libera stock reservado)
+     * Cancela un pedido (libera stock reservado y envía email)
      */
     public function cancelOrder(Order $order, int $userId): Order
     {
@@ -243,14 +248,31 @@ class OrderService
             // Liberar stock reservado
             $this->stockService->releaseReservedStock($order->id, $userId);
 
-            // Actualizar estado del pedido
-            $order->update(['status' => 'cancelled']);
+            // Actualizar estado del pedido con auditoría
+            $order->update([
+                'status' => 'cancelled',
+                'cancelled_by' => $userId,
+                'cancelled_at' => now(),
+            ]);
 
             DB::commit();
 
             // Notificar a los administradores sobre el pedido cancelado
             // COMENTADO: Solo se notifica cuando se crea el pedido desde el carrito
             // NotificationService::notifyOrderCancelled($order);
+
+            // Enviar email de cancelación si hay email
+            if ($order->customer_email) {
+                try {
+                    Mail::to($order->customer_email)->send(new OrderCancelledMail($order->load(['items', 'shippingAddress'])));
+                } catch (Exception $e) {
+                    // Log el error pero no fallar la transacción
+                    logger()->error('Error enviando email de cancelación', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
 
             return $order->fresh();
 
@@ -299,6 +321,9 @@ class OrderService
         if (in_array($order->status, ['pending', 'in_progress'])) {
             $this->stockService->releaseReservedStock($order->id, $userId);
         }
+
+        // Guardar auditoría antes del soft delete
+        $order->update(['deleted_by' => $userId]);
 
         $deleted = $order->delete();
 
