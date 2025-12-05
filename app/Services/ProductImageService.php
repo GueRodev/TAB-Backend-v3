@@ -11,10 +11,20 @@ class ProductImageService
 
     public function __construct()
     {
-        // Usa el disk configurado en FILESYSTEM_DISK (automático desde Laravel Cloud)
-        // En local: 'products' o 'local'
-        // En cloud: 's3' (inyectado por Laravel Cloud cuando se adjunta un bucket)
-        $this->disk = config('filesystems.default');
+        // Determinar el disk a usar según el entorno
+        // En local (FILESYSTEM_DISK=local): usar disk 'products' para imágenes públicas
+        // En staging/prod (FILESYSTEM_DISK=s3): usar disk 's3' para Laravel Cloud Object Storage
+
+        $defaultDisk = config('filesystems.default');
+
+        // Si el disk por defecto es 'local' o 'public', usar 'products' para imágenes
+        // Esto permite que funcione en desarrollo local
+        if (in_array($defaultDisk, ['local', 'public'])) {
+            $this->disk = 'products';
+        } else {
+            // En staging/producción con S3
+            $this->disk = $defaultDisk;
+        }
     }
 
     /**
@@ -25,8 +35,14 @@ class ProductImageService
         // Generar nombre único
         $filename = $productId . '_' . time() . '.' . $file->extension();
 
-        // Guardar archivo en el path 'products/'
-        Storage::disk($this->disk)->putFileAs('products', $file, $filename);
+        // Guardar archivo según el disk
+        if ($this->disk === 'products') {
+            // Disk 'products': guarda en storage/app/public/products (raíz del disk)
+            Storage::disk($this->disk)->putFileAs('', $file, $filename);
+        } else {
+            // Disk 's3': guarda en el path 'products/' dentro del bucket
+            Storage::disk($this->disk)->putFileAs('products', $file, $filename);
+        }
 
         // Retornar URL según el tipo de disk
         return $this->getFileUrl($filename);
@@ -42,7 +58,15 @@ class ProductImageService
         }
 
         $filename = basename($url);
-        return Storage::disk($this->disk)->delete('products/' . $filename);
+
+        // Eliminar archivo según el disk
+        if ($this->disk === 'products') {
+            // Disk 'products': archivo en la raíz del disk
+            return Storage::disk($this->disk)->delete($filename);
+        } else {
+            // Disk 's3': archivo en 'products/'
+            return Storage::disk($this->disk)->delete('products/' . $filename);
+        }
     }
 
     /**
@@ -55,7 +79,7 @@ class ProductImageService
             return Storage::disk('s3')->url('products/' . $filename);
         }
 
-        // Si es local o products, usar la URL local
+        // Si es local (disk 'products'), usar la URL local
         return url('/storage/products/' . $filename);
     }
 }
