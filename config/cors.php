@@ -20,11 +20,21 @@ return [
     'allowed_methods' => ['*'],     // Permite todos los metodos HTTP (GET, POST, PUT, DELETE, etc.)
 
     'allowed_origins' => [
+    // Desarrollo local
     'http://localhost:8081',        // Tu frontend en desarrollo
     'http://localhost:3000',        // Puerto por defecto de React
     'http://localhost:5173',        // Puerto por defecto de Vite
     'http://192.168.100.69:8081',   // Tu red local
-                                    // Dominio Produccion Futuro                        
+
+    // Netlify - dominios por defecto para pruebas iniciales
+    'https://*.netlify.app',        // Patrón para subdominios de Netlify
+
+    // Staging - dominio final (una vez configurado)
+    // 'https://toysandbricks.store',  // Descomentar cuando el dominio esté listo
+    // 'https://www.toysandbricks.store',  // Con www
+
+    // Producción futura
+    // Agregar dominios de producción aquí cuando sea necesario
     ],
 
     'allowed_origins_patterns' => [],   // Permite patrones de origen para más flexibilidad

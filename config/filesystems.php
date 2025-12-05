@@ -47,7 +47,7 @@ return [
             'report' => false,
         ],
         
-        // ← AGREGAR ESTE DISK NUEVO
+        // Disk local para desarrollo (usado cuando FILESYSTEM_DISK=local o products)
        'products' => [
            'driver' => 'local',
            'root' => storage_path('app/public/products'),
@@ -56,11 +56,13 @@ return [
            'throw' => false,
         ],
 
+        // Disk S3 para Laravel Cloud Object Storage (usado cuando FILESYSTEM_DISK=s3)
+        // Laravel Cloud inyecta automáticamente las credenciales AWS cuando se adjunta un bucket
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
