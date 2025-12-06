@@ -30,8 +30,8 @@ return [
     'https://*.netlify.app',        // Patrón para subdominios de Netlify
 
     // Staging - dominio final (una vez configurado)
-    // 'https://toysandbricks.store',  // Descomentar cuando el dominio esté listo
-    // 'https://www.toysandbricks.store',  // Con www
+    'https://toysandbricks.store',  // Descomentar cuando el dominio esté listo
+    'https://www.toysandbricks.store',  // Con www
 
     // Producción futura
     // Agregar dominios de producción aquí cuando sea necesario
